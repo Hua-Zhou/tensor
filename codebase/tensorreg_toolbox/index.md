@@ -47,7 +47,9 @@ MGLM Toolbox for Matlab by [Hua Zhou](http://www4.stat.ncsu.edu/~hzhou3/) and ??
 
 If you use this software in your research, please cite the following papers.
 
-* H Zhou, L Li, and H Zhu (2013) Tensor regression with applications in neuroimaging data analysis, JASA 108(502):540-552.
+* H Zhou, L Li, and H Zhu (2013) Tensor regression with applications in neuroimaging data analysis, JASA 108(502):540-552. [link](http://www.tandfonline.com/doi/abs/10.1080/01621459.2013.776499#.UeW24mTXjbw)
+* H Zhou and L Li (2013) Regularized matrix regression, Journal of Royal Statistical Society Series B, in press. \[[arXiv](http://arxiv.org/abs/1204.3331)\]
+* X Li, H Zhou, and L Li (2013) Tucker tensor regression and neuroimaging analysis, \[[arXiv](http://arxiv.org/abs/1304.5637)\]
 
 ### Contacts
 

@@ -1,11 +1,11 @@
-%% 2D covariates?linear regression
+%% 2D covariates, linear regression
 
 clear;
 % reset random seed
 s = RandStream('mt19937ar','Seed',2);
 RandStream.setGlobalStream(s);
 
-% 2D true signal 64-by-64: b
+% 2D true signal 64-by-64
 shape = imread('cross.gif'); 
 shape = imresize(shape,[32,32]); % 32-by-32
 b = zeros(2*size(shape));
@@ -61,29 +61,90 @@ axis tight;
 subplot(1,4,2);
 imagesc(-double(beta_rk1));
 colormap(gray);
-title({['TR(1),', ' BIC=',num2str(glmstats1{end}.BIC)]});
+title({['rank=1, ', ' BIC=',num2str(glmstats1{end}.BIC,5)]});
 axis equal;
 axis tight;
 
 subplot(1,4,3);
 imagesc(-double(beta_rk2));
 colormap(gray);
-title({['TR(2),', ' BIC=',num2str(glmstats2{end}.BIC)]});
+title({['rank=2 ', ' BIC=',num2str(glmstats2{end}.BIC,5)]});
 axis equal;
 axis tight;
 
 subplot(1,4,4);
 imagesc(-double(beta_rk3));
 colormap(gray);
-title({['TR(3),', ' BIC=',num2str(glmstats3{end}.BIC)]});
+title({['rank=3, ', ' BIC=',num2str(glmstats3{end}.BIC,5)]});
 axis equal;
 axis tight;
 
-%% 2D covariates?sparse linear regression
+%% 2D covariates, sparse linear regression
 
-%% 2D covariates?logistic regression
+% set lasso penalty and tuning parameter values
+pentype = 'enet';
+penparam = 1;
+lambda = [0,100,1000];
 
-%% 2D covariates?sparse logistic regression
+% estimate using tensor regression - lambda 1
+tic;
+disp(['lambda=', num2str(lambda(1))]);
+[~,beta_rk1,~,glmstat_rk1] = kruskal_sparsereg(X,M,y,3,'normal',lambda(1),...
+    pentype,penparam);
+toc;
+
+% estimate using tensor regression - lambda 2
+tic;
+disp(['lambda=', num2str(lambda(2))]);
+[~,beta_rk2,~,glmstat_rk2] = kruskal_sparsereg(X,M,y,3,'normal',lambda(2),...
+    pentype,penparam);
+toc;
+
+% estimate using tensor regression - lambda 3
+tic;
+disp(['lambda=', num2str(lambda(3))]);
+[~,beta_rk3,~,glmstat_rk3] = kruskal_sparsereg(X,M,y,3,'normal',lambda(3),...
+    pentype,penparam);
+toc;
+
+% display true and recovered signals
+figure; hold on;
+set(gca,'FontSize',20);
+
+subplot(1,4,1);
+imagesc(-b);
+colormap(gray);
+title('True Signal');
+axis equal;
+axis tight;
+
+subplot(1,4,2);
+imagesc(-double(beta_rk1));
+colormap(gray);
+title({['TR(3),' pentype '(' num2str(penparam), '), \lambda=', num2str(lambda(1))];...
+    ['BIC=', num2str(glmstat_rk1{end}.BIC)]});
+axis equal;
+axis tight;
+
+subplot(1,4,3);
+imagesc(-double(beta_rk2));
+colormap(gray);
+title({['TR(3),' pentype '(' num2str(penparam), '), \lambda=', num2str(lambda(2))];...
+    ['BIC=', num2str(glmstat_rk2{end}.BIC)]});
+axis equal;
+axis tight;
+
+subplot(1,4,4);
+imagesc(-double(beta_rk3));
+colormap(gray);
+title({['TR(3),' pentype '(' num2str(penparam), '), \lambda=', num2str(lambda(3))];...
+    ['BIC=', num2str(glmstat_rk3{end}.BIC)]});
+axis equal;
+axis tight;
+
+%% 2D covariates, logistic regression
+
+%% 2D covariates, sparse logistic regression
 
 %% 3D covaraites, linear regression
 

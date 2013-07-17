@@ -10,9 +10,9 @@ function [beta0_final,beta_final,glmstats_final,dev_final] = ...
 %       M: array variates (or tensors) with dim(M) = [p1,p2,...,pd,n]
 %       y: n-by-1 respsonse vector
 %       r: rank of Kruskal tensor regression
-%       dist: 'normal', 'binomial', 'gamma', 'inverse gaussian or 'poisson'
+%       dist: 'normal'|'binomial'|'gamma'|'inverse gaussian'|'poisson'
 %
-%   Optional input arguments:
+%   Optional input name-value pairs:
 %       'Display': 'off' (default) or 'iter'
 %       'MaxIter': maximum iteration, default is 100
 %       'Replicates': # intitial points to try, default is 5
@@ -28,6 +28,9 @@ function [beta0_final,beta_final,glmstats_final,dev_final] = ...
 % Examples
 %
 % See also tucker_reg
+%
+% TODO
+%   - properly deal with the identifiability issue
 %
 % Reference
 %   H Zhou, L Li, and H Zhu (2013) Tensor regression with applications in

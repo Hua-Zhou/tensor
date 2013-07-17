@@ -1,28 +1,47 @@
 function [beta0_final,beta_final,beta_scale,glmstats] = ...
     kruskal_sparsereg(X,M,y,r,dist,lambda,pentype,penparam,varargin)
-% TENSOR_SPARSEREG  Rank-r GLM sparse Kruskal regression
+% KRUSKAL_SPARSEREG  Rank-r GLM sparse Kruskal regression
 %
-% INPUT:
-%   X - n-by-p0 regular covariate matrix
-%   M - array variates (or tensors) with dim(M) = [p1,p2,...,pd,n]
-%   y - n-by-1 respsonse vector
-%   r - rank of tensor regression
-%   dist - 'binomial', 'gamma', 'inverse gaussian',
-%       'normal', or 'poisson'
-%   lambda - penalty tuning constant
-%   pentype - 'enet'|'log'|'mcp'|'power'|'scad'
-%   penparam - the index parameter for the pentype
+% [BETA0,BETA,BETA_SCALE,GLMSTATS] =
+% KRUSKAL_SPARSEREG(X,M,Y,R,DIST,LAMBDA,PENTYPE,PENPARAM) fits the sparse
+% Kruskal tensor regression using penalty PENTYPE at fixed tuning paramete
+% value LAMBDA.
 %
-% Output:
-%   beta0_final - regression coefficients for the regular covariates
-%   beta_final  - a tensor of regression coefficientsn for array variates
-%   beta_scale  - a tensor of the scaling constants for the array
-%                coefficients
-%   glmstats    - GLM statistics from the last fitting of the regular
-%               covariates
-
-% COPYRIGHT: North Carolina State University
-% AUTHOR: Hua Zhou (hua_zhou@ncsu.edu) and Lexin Li
+%   INPUT:
+%       X: n-by-p0 regular covariate matrix
+%       M: array variates (or tensors) with dim(M) = [p1,p2,...,pd,n]
+%       y: n-by-1 respsonse vector
+%       r: rank of tensor regression
+%       dist: 'binomial'|'normal'|'poisson'
+%       lambda: penalty tuning constant
+%       pentype: 'enet'|'log'|'mcp'|'power'|'scad'
+%       penparam: the index parameter for the pentype
+%
+%   Optional input name-value pairs:
+%       'BurninMaxIter': Max. iter. for the burn-in runs, default is 20
+%       'BurninTolFun': Tolerance for the burn-in runs, default is 1e-2
+%       'BurninReplicates': Number of the burn-in runs, default is 5
+%       'Display': 'off' (default) | 'iter'
+%       'PenaltyMaxIter': Max. iters. at penalization stage, default is 50
+%       'PenaltyTolFun': Tolerence at penalization stage, default is 1e-3
+%       'weights': observation weights, default is ones for each obs.
+%
+%   OUTPUT:
+%       beta0_final: regression coefficients for the regular covariates
+%       beta_final: a tensor of regression coefficientsn for array variates
+%       beta_scale: a tensor of the scaling constants for the array
+%           coefficients
+%       glmstats: GLM statistics from the last fitting of the regular
+%           covariates
+%
+% Reference
+%   H Zhou, L Li, and H Zhu (2013) Tensor regression with applications in
+%   neuroimaging data analysis, JASA 108(502):540-552
+%
+% TODO
+%
+% COPYRIGHT 2011-2013 North Carolina State University
+% Hua Zhou (hua_zhou@ncsu.edu) and Lexin Li
 
 % parse inputs
 argin = inputParser;
@@ -37,7 +56,7 @@ argin.addRequired('penparam', @isnumeric);
 argin.addParamValue('Display', 'off', @(x) strcmp(x,'off')||strcmp(x,'iter'));
 argin.addParamValue('BurninMaxIter', 20, @(x) isnumeric(x) && x>0);
 argin.addParamValue('BurninTolFun', 1e-2, @(x) isnumeric(x) && x>0);
-argin.addParamValue('BurninReplicates', 10, @(x) isnumeric(x) && x>0);
+argin.addParamValue('BurninReplicates', 5, @(x) isnumeric(x) && x>0);
 argin.addParamValue('PenaltyMaxIter', 50, @(x) isnumeric(x) && x>0);
 argin.addParamValue('PenaltyTolFun', 1e-3, @(x) isnumeric(x) && x>0);
 argin.addParamValue('weights', [], @(x) isnumeric(x) && all(x>=0));
@@ -77,7 +96,8 @@ end
 d = ndims(M)-1; % dimension of array variates
 p = size(M);    % sizes array variates
 if (p(end)~=n)
-    error('dimension of M does not match that of X!');
+    error('tensorreg:kruskal_sparsereg:dim', ...
+        'dimension of M does not match that of X!');
 end
 
 % convert M into a tensor T
@@ -113,7 +133,7 @@ if (~strcmpi(Display,'off'))
 end
 [dummy,beta_burnin] = ...
     kruskal_reg(X,M,y,r,dist,'MaxIter',BurninMaxIter,'TolFun',BurninTolFun,...
-    'Replicates',BurninReplicates,'weights',wts,'Display','iter'); %#ok<ASGLU>
+    'Replicates',BurninReplicates,'weights',wts); %#ok<ASGLU>
 
 % penalization stage
 if (~strcmpi(Display,'off'))
