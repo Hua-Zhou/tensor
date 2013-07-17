@@ -104,9 +104,9 @@ end
 TM = tensor(M);
 
 % turn off warnings
-warning('off','stats:glmfit:IterationLimit');
-warning('off','stats:glmfit:BadScaling');
-warning('off','stats:glmfit:IllConditioned');
+warning('off','tensorreg:glmfit_priv:IterationLimit');
+warning('off','tensorreg:glmfit_priv:BadScaling');
+warning('off','tensorreg:glmfit_priv:IllConditioned');
 
 % if space allowing, pre-compute mode-d matricization of TM
 if (strcmpi(computer,'PCWIN64') || strcmpi(computer,'PCWIN32'))
@@ -190,9 +190,6 @@ for iter = 1:PenaltyMaxIter
             end
         end
         if (isglm)
-%             betatmp = glm_sparsereg([Xj,eta0],y,lambda,glmmodel,'weights',wts,...
-%                 'x0',[beta{j}(:);0],'penidx',[true(1,p(j)*r),false],...
-%                 'penalty',pentype,'penparam',penparam);
             betatmp = glm_sparsereg([Xj,eta0],y,lambda,glmmodel,'weights',wts,...
                 'penidx',[true(1,p(j)*r),false],...
                 'penalty',pentype,'penparam',penparam);
