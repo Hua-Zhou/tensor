@@ -24,27 +24,24 @@ M = randn(p1,p2,n);  % p1-by-p2-by-n matrix variates
 mu = X*b0 + squeeze(sum(sum(repmat(b,[1 1 n]).*M,1),2));
 % simulate responses
 sigma = 1;  % noise level
-y = normrnd(mu,sigma,n,1);
-
-% estimate without using array covariates
-[beta_rk0,dev0] = glmfit(X,y,'normal','constant','off');
+y = mu + sigma*randn(n,1);
 
 % estimate using tensor regression - rank 1
 tic;
 disp('rank 1');
-[beta0_rk1,beta_rk1,glmstats1,dev1] = kruskal_reg(X,M,y,1,'normal');
+[~,beta_rk1,glmstats1] = kruskal_reg(X,M,y,1,'normal');
 toc;
 
 % estimate using tensor regression - rank 2
 tic;
 disp('rank 2');
-[beta0_rk2,beta_rk2,glmstats2,dev2] = kruskal_reg(X,M,y,2,'normal');
+[~,beta_rk2,glmstats2] = kruskal_reg(X,M,y,2,'normal');
 toc;
 
 % estimate using tensor regression - rank 3
 tic;
 disp('rank 3');
-[beta0_rk3,beta_rk3,glmstats3,dev3] = kruskal_reg(X,M,y,3,'normal');
+[~,beta_rk3,glmstats3] = kruskal_reg(X,M,y,3,'normal');
 toc;
 
 % display true and recovered signals
@@ -284,10 +281,68 @@ axis tight;
 
 %% 3D covaraites, linear regression
 
+clear;
+% reset random seed
+s = RandStream('mt19937ar','Seed',2);
+RandStream.setGlobalStream(s);
 
+% true 3D signal: 'two-patch'
+b = zeros(25,25,25);
+b(6:10,6:10,6:10) = 1;
+b(18:22,18:22,18:22) = 1;
+[p1, p2, p3] = size(b);
+
+figure; 
+isosurface(b,.5); 
+xlim([1, p1]);
+ylim([1, p2]);
+zlim([1, p3])
+title('True Signal');
+
+% true regression coefficients for regular covariates
+p0 = 5;
+b0 = ones(p0,1);
+
+% simulate covariates
+n = 500;    % sample size
+X = randn(n,p0);   % n-by-p regular design matrix
+M = tensor(randn(p1,p2,p3,n));  % p1-by-p2-by-p3 3D variates
+% the systematic part
+mu = X*b0 + double(ttt(M,tensor(b),1:3));
+% simulate responses
+sigma = 1;  % noise level
+y = mu + sigma*randn(n,1);
+
+%% estimate by Kruskal regression - rank 1
+
+tic;
+disp('rank 1');
+[~,beta_rk1,glmstats1] = kruskal_reg(X,M,y,1,'normal');
+toc;
+
+figure;
+isosurface(double(beta_rk1),0.5); 
+title({['rank=1, ', ' BIC=',num2str(glmstats1{end}.BIC,5)]});
+
+% estimate by Kruskal regression - rank 2
+tic;
+disp('rank 2');
+[~,beta_rk2,glmstats2] = kruskal_reg(X,M,y,2,'normal');
+toc;
+
+figure;
+isosurface(double(beta_rk2),0.5); 
+title({['rank=2, ', ' BIC=',num2str(glmstats2{end}.BIC,5)]});
+
+% estimate by Kruskal regression - rank 3
+tic;
+disp('rank 3');
+[~,beta_rk3,glmstats3] = kruskal_reg(X,M,y,3,'normal');
+toc;
+
+figure;
+isosurface(double(beta_rk3),0);
+title({['rank=3, ', ' BIC=',num2str(glmstats3{end}.BIC,5)]});
 
 %% 3D covaraites, sparse linear regression
 
-%% 3D covariates, logistic regression
-
-%% 3D covariates, sparse logistic regression
