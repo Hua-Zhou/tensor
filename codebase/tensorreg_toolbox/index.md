@@ -31,13 +31,8 @@ If you want to run sparse tensor regression, you also need to download and insta
 
 ### Tutorials
 
-* [Dirichlet-Multinomial distribution](./html/demo_dirmn.html)
-* [Generalized Dirichlet-Multinomial distribution](./html/demo_gendirmn.html)
-* [Negative multinomial distribution](./html/demo_negmn.html)
-* [Multinomial-logit regression and sparse regression](./html/demo_mnlogitreg.html)
-* [Dirichlet-Multinomial regression and sparse regression](./html/demo_dirmnreg.html)
-* [Generalized Dirichlet-Multinomial regression and sparse regression](./html/demo_gendirmnreg.html)
-* [Negative multinomial regression and sparse regression](./html/demo_negmnreg.html)
+* [Kruskal regression and sparse Kruskal regression](./html/demo_kruskal.html)
+* [Tucker regression and sparse Tucker regression](./html/demo_tucker.html)
 
 ### Legal stuff
 
