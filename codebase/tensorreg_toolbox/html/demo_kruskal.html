@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>demo_kruskal</title><meta name="generator" content="MATLAB 7.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-07-18"><meta name="DC.source" content="demo_kruskal.m"><style type="text/css">
+      --><title>demo_kruskal</title><meta name="generator" content="MATLAB 7.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-07-19"><meta name="DC.source" content="demo_kruskal.m"><style type="text/css">
 
 body {
   background-color: white;
@@ -138,11 +138,11 @@ title({[<span class="string">'rank=3, '</span>, <span class="string">' BIC='</sp
 axis <span class="string">equal</span>;
 axis <span class="string">tight</span>;
 </pre><pre class="codeoutput">rank 1
-Elapsed time is 1.694706 seconds.
+Elapsed time is 1.685606 seconds.
 rank 2
-Elapsed time is 5.757617 seconds.
+Elapsed time is 5.922867 seconds.
 rank 3
-Elapsed time is 24.296924 seconds.
+Elapsed time is 25.173070 seconds.
 </pre><img vspace="5" hspace="5" src="demo_kruskal_01.png" alt=""> <h2>2D covariates, sparse linear regression<a name="2"></a></h2><pre class="codeinput"><span class="comment">% set lasso penalty and tuning parameter values</span>
 pentype = <span class="string">'enet'</span>;
 penparam = 1;
@@ -207,17 +207,17 @@ title({[<span class="string">'TR(3),'</span> pentype <span class="string">'('</s
 axis <span class="string">equal</span>;
 axis <span class="string">tight</span>;
 </pre><pre class="codeoutput">lambda=0
-Elapsed time is 5.732814 seconds.
+Elapsed time is 5.697838 seconds.
 lambda=100
-Elapsed time is 5.541555 seconds.
+Elapsed time is 5.522607 seconds.
 lambda=1000
-Elapsed time is 5.562334 seconds.
+Elapsed time is 5.568685 seconds.
 </pre><img vspace="5" hspace="5" src="demo_kruskal_02.png" alt=""> <h2>2D covariates, logistic regression<a name="3"></a></h2><pre class="codeinput">clear;
 <span class="comment">% reset random seed</span>
 s = RandStream(<span class="string">'mt19937ar'</span>,<span class="string">'Seed'</span>,2);
 RandStream.setGlobalStream(s);
 
-<span class="comment">% 2D true signal 64-by-64</span>
+<span class="comment">% 2D true signal 64-by-64: cross</span>
 shape = imread(<span class="string">'cross.gif'</span>);
 shape = imresize(shape,[32,32]); <span class="comment">% 32-by-32</span>
 b = zeros(2*size(shape));
@@ -287,11 +287,11 @@ title({[<span class="string">'rank=3, '</span>, <span class="string">' BIC='</sp
 axis <span class="string">equal</span>;
 axis <span class="string">tight</span>;
 </pre><pre class="codeoutput">rank 1
-Elapsed time is 2.734703 seconds.
+Elapsed time is 2.751896 seconds.
 rank 2
-Elapsed time is 31.771677 seconds.
+Elapsed time is 30.580939 seconds.
 rank 3
-Elapsed time is 74.944918 seconds.
+Elapsed time is 68.558678 seconds.
 </pre><img vspace="5" hspace="5" src="demo_kruskal_03.png" alt=""> <h2>2D covariates, sparse logistic regression<a name="4"></a></h2><pre class="codeinput"><span class="comment">% set lasso penalty and tuning parameter values</span>
 pentype = <span class="string">'enet'</span>;
 penparam = 1;
@@ -356,33 +356,57 @@ title({[<span class="string">'TR(3),'</span> pentype <span class="string">'('</s
 axis <span class="string">equal</span>;
 axis <span class="string">tight</span>;
 </pre><pre class="codeoutput">lambda=0
-Warning: Iteration limit reached. 
-Warning: Iteration limit reached. 
-Warning: Iteration limit reached. 
-Warning: Iteration limit reached. 
-Warning: Iteration limit reached. 
-Warning: Iteration limit reached. 
-Elapsed time is 32.308171 seconds.
+Warning: Iteration limit
+reached. 
+Warning: Iteration limit
+reached. 
+Warning: Iteration limit
+reached. 
+Warning: Iteration limit
+reached. 
+Warning: Iteration limit
+reached. 
+Warning: Iteration limit
+reached. 
+Elapsed time is 31.939959 seconds.
 lambda=10
-Warning: Iteration limit reached. 
-Warning: Iteration limit reached. 
-Warning: Iteration limit reached. 
-Warning: Iteration limit reached. 
-Warning: Iteration limit reached. 
-Warning: Iteration limit reached. 
-Warning: Iteration limit reached. 
-Warning: Iteration limit reached. 
-Warning: Iteration limit reached. 
-Elapsed time is 33.749006 seconds.
+Warning: Iteration limit
+reached. 
+Warning: Iteration limit
+reached. 
+Warning: Iteration limit
+reached. 
+Warning: Iteration limit
+reached. 
+Warning: Iteration limit
+reached. 
+Warning: Iteration limit
+reached. 
+Warning: Iteration limit
+reached. 
+Warning: Iteration limit
+reached. 
+Warning: Iteration limit
+reached. 
+Elapsed time is 33.650710 seconds.
 lambda=50
-Warning: Iteration limit reached. 
-Warning: X is ill conditioned, or the model is overparameterized, and
-some coefficients are not identifiable.  You should use caution
+Warning: Iteration limit
+reached. 
+Warning: X is ill conditioned,
+or the model is
+overparameterized, and
+some coefficients are not
+identifiable.  You should use
+caution
 in making predictions. 
-Warning: X is ill conditioned, or the model is overparameterized, and
-some coefficients are not identifiable.  You should use caution
+Warning: X is ill conditioned,
+or the model is
+overparameterized, and
+some coefficients are not
+identifiable.  You should use
+caution
 in making predictions. 
-Elapsed time is 16.650417 seconds.
+Elapsed time is 16.789867 seconds.
 </pre><img vspace="5" hspace="5" src="demo_kruskal_04.png" alt=""> <h2>3D covaraites, linear regression<a name="5"></a></h2><pre class="codeinput">clear;
 <span class="comment">% reset random seed</span>
 s = RandStream(<span class="string">'mt19937ar'</span>,<span class="string">'Seed'</span>,2);
@@ -466,11 +490,11 @@ zlim([1 p3]);
 title({[<span class="string">'rank=3, '</span>, <span class="string">' BIC='</span>, num2str(glmstats3{end}.BIC,5)]});
 axis <span class="string">equal</span>;
 </pre><pre class="codeoutput">rank 1
-Elapsed time is 3.486203 seconds.
+Elapsed time is 3.588863 seconds.
 rank 2
-Elapsed time is 12.275934 seconds.
+Elapsed time is 12.413637 seconds.
 rank 3
-Elapsed time is 23.112399 seconds.
+Elapsed time is 23.414859 seconds.
 </pre><img vspace="5" hspace="5" src="demo_kruskal_05.png" alt=""> <h2>3D covaraites, sparse linear regression<a name="6"></a></h2><pre class="codeinput"><span class="comment">% set lasso penalty and tuning parameter values</span>
 pentype = <span class="string">'enet'</span>;
 penparam = 1;
@@ -544,11 +568,11 @@ title({[<span class="string">'TR(3),'</span> pentype <span class="string">'('</s
     [<span class="string">'BIC='</span>, num2str(glmstat_rk3{end}.BIC)]});
 daspect(daspect);
 </pre><pre class="codeoutput">lambda=0
-Elapsed time is 5.846917 seconds.
+Elapsed time is 6.031795 seconds.
 lambda=100
-Elapsed time is 4.535525 seconds.
+Elapsed time is 4.600485 seconds.
 lambda=1000
-Elapsed time is 4.526078 seconds.
+Elapsed time is 4.499942 seconds.
 </pre><img vspace="5" hspace="5" src="demo_kruskal_06.png" alt=""> <p class="footer"><br>
       Published with MATLAB&reg; 7.12<br></p></div><!--
 ##### SOURCE BEGIN #####
@@ -703,7 +727,7 @@ clear;
 s = RandStream('mt19937ar','Seed',2);
 RandStream.setGlobalStream(s);
 
-% 2D true signal 64-by-64
+% 2D true signal 64-by-64: cross
 shape = imread('cross.gif'); 
 shape = imresize(shape,[32,32]); % 32-by-32
 b = zeros(2*size(shape));
