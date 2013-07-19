@@ -1,20 +1,44 @@
 function [beta0,B,stats] = matrix_sparsereg(X,M,y,lambda,dist,varargin)
-% MATRIX_SPARSEREG Fit nuclear norm regularized matrix regression
+% MATRIX_SPARSEREG Fit spectrum regularized matrix regression
 %
-% INPUT:
-%   X - n-by-p0 regular covariate matrix
-%   M - matrix variates (or tensors) with dim(M) = [p1,p2,n]
-%   y - n-by-1 respsonse vector
-%   lambda - regularization parameter
-%   dist - 'binomial', 'gamma', 'inverse gaussian','normal', or 'poisson'
+% [BETA0,B,STATS] = MATRIX_SPARSEREG(X,M,Y,LAMBDA,DIST) fits the spectrum
+%   regularized matrix regression.
 %
-% Output:
-%   beta0 - regression coefficients for the regular covariates
-%   B - regression coefficients for matrix variates
-%   stats - algorithmic statistics
-
-% COPYRIGHT: North Carolina State University
-% AUTHOR: Hua Zhou (hua_zhou@ncsu.edu), Lexin Li
+%   INPUT:
+%       X: n-by-p0 regular covariate matrix
+%       M: matrix variates (or tensors) with dim(M) = [p1,p2,n]
+%       y: n-by-1 respsonse vector
+%       lambda: regularization parameter
+%       dist: 'normal'(default) | 'binomial' | 'poisson'
+%
+%   Optional input name-value pairs:
+%       'B0': intial value for matrix covariate
+%       'delta': algo. parameter for the Nesterov method, default is 1e-3
+%       'Display': 'off' (default) or 'iter'
+%       'MaxIter': maximum iteration, default is 500
+%       'penalty': penalty name, default is enet(1) (nuclear norm)
+%       'penparam': penalty param., default is enet(1) (nuclear norm)
+%       'TolFun': tolerence in objective value, default is 1e-3
+%       'Warnings': turn on/off glimfit warnings, default is 'off'
+%       'weights': observation weights, default is ones for each obs.
+%
+%   Output:
+%       beta0: regression coefficients for the regular covariates
+%       B: regression coefficients for matrix variates
+%       stats: algorithmic statistics
+%
+% Examples
+%
+% Reference
+%   H Zhou and L Li (2013) Regularized matrix regression, JRSSB,
+%   to appear. <http://arxiv.org/abs/1204.3331>
+%
+% See also kruskal_reg, kruskal_sparsereg, tucker_reg, tucker_sparsereg
+%
+% TODO
+%
+% COPYRIGHT 2011-2013 North Carolina State University
+% Hua Zhou <hua_zhou@ncsu.edu>
 
 % parse inputs
 argin = inputParser;
@@ -26,7 +50,7 @@ argin.addRequired('dist', @(x) ischar(x));
 argin.addParamValue('B0', [], @(x) isa(x,'ktensor') || isempty(x));
 argin.addParamValue('delta', 1e-3, @(x) isnumeric(x) && x>0);
 argin.addParamValue('Display', 'off', @(x) strcmp(x,'off')||strcmp(x,'iter'));
-argin.addParamValue('MaxIter', 100, @(x) isnumeric(x) && x>0);
+argin.addParamValue('MaxIter', 500, @(x) isnumeric(x) && x>0);
 argin.addParamValue('penalty', 'enet', @ischar);
 argin.addParamValue('penparam', 1, @isnumeric);
 argin.addParamValue('TolFun', 1e-3, @(x) isnumeric(x) && x>0);
@@ -50,27 +74,34 @@ if (strcmpi(dist,'normal'))
 elseif (strcmpi(dist,'binomial'))
     model = 'LOGISTIC';
     if (any(y<0) || any(y>1))
-        error('responses outside [0,1]');
+        error('tensorreg:matrix_sparsereg:binoy', ...
+            'responses outside [0,1]');
     end
 elseif (strcmpi(dist,'poisson'))
     model = 'LOGLINEAR';
     if (any(y<0))
-        error('responses y must be nonnegative');
+        error('tensorreg:matrix_sparsereg:poiy', ...
+            'responses y must be nonnegative');
     end
 else
-    error('model not recogonized. LINEAR|LOGISTIC|LOGLINEAR accepted');
+    error('tensorreg:matrix_sparsereg:modl', ...
+        'model not recogonized. LINEAR|LOGISTIC|LOGLINEAR accepted');
 end
 
 % check dimensions
 if (length(size(M))~=3)
-    error('M should be of size p1-by-p2-by-n');
+    error('tensorreg:matrix_sparsereg:msize', ...
+        'M should be of size p1-by-p2-by-n');
 end
-[p1,p2,n] = size(M);
+p1 = size(M,1);
+p2 = size(M,2);
+n = size(M,3);
 if (isempty(X))
     X = ones(n,1);  % intercept term
 end
 if (size(X,1)~=n)
-    error('X should be n-by-p0');
+    error('tensorreg:matrix_sparsereg:xsize', ...
+        'X should be n-by-p0');
 end
 
 % default weights
@@ -96,9 +127,9 @@ objval = inf;
 
 % turn off warnings
 if (strcmpi(Warnings,'off'))
-warning('off','stats:glmfit:IterationLimit');
-warning('off','stats:glmfit:BadScaling');
-warning('off','stats:glmfit:IllConditioned');
+    warning('off','stats:glmfit:IterationLimit');
+    warning('off','stats:glmfit:BadScaling');
+    warning('off','stats:glmfit:IllConditioned');
 end
 
 % main loop

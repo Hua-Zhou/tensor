@@ -149,7 +149,7 @@ clear;
 s = RandStream('mt19937ar','Seed',2);
 RandStream.setGlobalStream(s);
 
-% 2D true signal 64-by-64
+% 2D true signal 64-by-64: cross
 shape = imread('cross.gif'); 
 shape = imresize(shape,[32,32]); % 32-by-32
 b = zeros(2*size(shape));
