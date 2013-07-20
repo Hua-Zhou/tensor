@@ -1,7 +1,7 @@
-function [Mpca,PC,latent] = tpca(M,d)
+function [Mproj,PC,latent] = tpca(M,d,varargin)
 % TPCA Tensor principle component analysis
 %
-% [MPCA, PC, LATENT] = TPCA(M,d) performs the tensor version of the
+% [MPROJ, PC, LATENT] = TPCA(M,d) performs the tensor version of the
 %   traditional PCA. Given n tensor observations, flatten each along mode i
 %   to obtain a matrix, take outer product of the matrix (p_i-by-p_i), then
 %   do the classical PCA on the sum of outer products, retrieve the first
@@ -12,9 +12,13 @@ function [Mpca,PC,latent] = tpca(M,d)
 %       M: array variates (aka tensors) with dim(M) = [p_1,p_2,...,p_D,n]
 %       d: target dimensions [d_1,...,d_D]
 %
+%   Optional input name-value pairs:
+%       'Centering': true (default) | false, center tensor data or note
+%       'Method': 'hosvd' (default) | '2dsvd', method for tensor PCA
+%
 %   Output:
-%       MPCA: array with dim(Mpca)=[d_1,...,d_D] after change of basis. In
-%           PCA literature, it is called the SCOREs
+%       MPROJ: tensor with dim(Mproj)=[d_1,...,d_D,n] after change of basis.
+%           In PCA literature, it is called the SCOREs
 %       PC: D-by-1 cell array containing principal components along each
 %           mode. PC{i} has dimension p_i-by-d_i. In PCA literature, they
 %           are called the COEFFICIENTs
@@ -25,15 +29,28 @@ function [Mpca,PC,latent] = tpca(M,d)
 %
 % See also pca
 %
-% TODO
-%   - need to provide the option of centering
+% Reference:
+%   L Lu, KN Plataniotis, and AN Venetsanopoulos (2006) Multilinear
+%   principal component analysis for tensor objects for classification, 
+%   Proc. Int. Conf. on Pattern Recognition.
 %
 % COPYRIGHT 2011-2013 North Carolina State University
 % Hua Zhou <hua_zhou@ncsu.edu>
 
+% parse inputs
+argin = inputParser;
+argin.addRequired('M', @(x) isa(x,'tensor') || isnumeric(x));
+argin.addRequired('d', @isnumeric);
+argin.addParamValue('Centering', true, @(x) islogical(x));
+argin.addParamValue('Method', 'hosvd', @(x) ischar(x));
+argin.parse(M,d,varargin{:});
+
+centering = argin.Results.Centering;
+method = argin.Results.Method;
+
 % check dimensionalities
 p = size(M); n = p(end); p(end) = []; D = length(p);
-if (size(d,1)>size(d,2))
+if size(d,1)>size(d,2)
     d = d';
 end
 if length(d)~=D
@@ -46,25 +63,57 @@ if any(d>p)
 end
 
 % change M to tensor (if it is not)
-TM = tensor(M);
-
-% loop over dimensions to obtain PCs
-PC = cell(1,D);
-latent = cell(1,D);
-idx = repmat({':'}, D, 1);
-for dd=1:D
-    C = zeros(p(dd),p(dd)); % p_d-by-p_d
-    for i=1:n
-        tmati = double(tenmat(TM(idx{:},i),dd));   % #rows = p_d
-        C = C + tmati*tmati';
-    end
-    C = C/n;
-    [PC{dd},latent{dd}] = eigs(C,d(dd));
-    latent{dd} = diag(latent{dd});
+if isa(M,'tensor')
+    TM = M;
+else
+    TM = tensor(M);
 end
 
+% centering data
+idx = repmat({':'}, D, 1);
+if centering
+
+    TMavg = collapse(TM, D+1, @mean);
+    for i=1:n
+        TM(idx{:},i) = TM(idx{:},i) - TMavg;
+    end
+
+end
+
+if strcmpi(method,'hosvd')
+    
+    warning('off','MATLAB:eigs:TooManyRequestedEigsForRealSym');
+    tucker_approx = tucker_als(TM, [d n], 'printitn', false);
+    warning on all;
+    % PC basis
+    PC = tucker_approx.U(1:D)';
+    % tensor singular values
+    latent = cell(1,D);
+    for dd=1:D
+        latent{dd} = double(collapse(tucker_approx.core, -dd, @norm));
+    end
+    
+elseif strcmpi(method,'2dsvd')
+
+    % loop over dimensions to obtain PCs
+    PC = cell(1,D);
+    latent = cell(1,D);
+    for dd=1:D
+        C = zeros(p(dd),p(dd)); % p_d-by-p_d
+        for i=1:n
+            tmati = double(tenmat(TM(idx{:},i),dd));   % #rows = p_d
+            C = C + tmati*tmati';
+        end
+        C = C/n;
+        [PC{dd},latent{dd}] = eigs(C,d(dd));
+        latent{dd} = diag(latent{dd});
+    end
+    
+end%if
+
 % change of basis for original array data
-Mpca = ttm(tensor(M),[cellfun(@(X) X',PC,'UniformOutput',false),eye(n)]);
-Mpca = double(Mpca);
+Mproj = ttm(TM,[cellfun(@(X) X',PC,'UniformOutput',false), eye(n)]);
+Mproj = double(Mproj);
+
 
 end
