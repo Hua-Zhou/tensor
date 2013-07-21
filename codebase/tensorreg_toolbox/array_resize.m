@@ -1,61 +1,105 @@
 function [B] = array_resize(A, targetdim, varargin)
-% ARRAY_RESIZE Resize array A to [[A;K1,K2,...,KD]] where K is specified
-%   by method
+% ARRAY_RESIZE Resize a multi-dimensional array A
 %
-% INPUT
-%   A: a D-dimensional array
-%   targetdim: a 1-by-D vector of target dimensions
-%   method: name of kernel method
+% B = ARRAY_RESIZE(A, TARGETDIM) resizes an array A to target dimension.
+% When 'method' equals 'interpolate' or 'dct', both downsizing and upsizing
+% are allowed. When 'method' equals 'hosvd' or '2dsvd', only downsizing is
+% allowed and the last element of targetdim is ignored. The resized array B
+% has same data type as A.
 %
-% OUTPUT
-%   B: resized array
+%   INPUT
+%       A: a D-dimensional array
+%       targetdim: a 1-by-D vector of target dimensions
 %
-% COPYRIGHT: North Carolina State University
-% AUTHOR: Hua Zhou (hua_zhou@ncsu.edu)
+%   Optional input name-value pairs:
+%       'method': 'interpolate'(default) | 'dct' | 'hosvd' | '2dsvd'
+%
+%   OUTPUT
+%       B: resized array
+%
+% TODO
+%   - wavelet transform
+%
+% COPYRIGHT 2011-2013 North Carolina State University
+% Hua Zhou <hua_zhou@ncsu.edu>
 
 % parse inputs
 argin = inputParser;
 argin.addRequired('A');
 argin.addRequired('targetdim', @isnumeric);
-argin.addParamValue('method', [], @(x) ischar(x)||isempty(x));
+argin.addParamValue('method', 'interpolate', @(x) ischar(x));
 argin.addParamValue('inverse', false, @islogical);
 argin.parse(A, targetdim, varargin{:});
+
 isinverse = argin.Results.inverse;
 method = argin.Results.method;
 
-% for 2D input, the default is image resize by Matlab imresize() function
-if (isempty(method))
-    B = imresize(A,targetdim);
-    return;
-end
-
 % turn array into tensor structure
-A = tensor(A);
-D = ndims(A);
 p = size(A);
+D = length(p);
 
 % argument checking
-if (length(targetdim)~=D)
-    error('targetdim does not match dimension of A');
+if length(targetdim)~=D
+    error('tensorreg:array_resize:targetdim', ...
+        'targetdim does not match dimension of A');
 end
 
-% obtain the support of the wavelets
-[hr] = wfilters(method,'r');
-N = fix(length(hr)/2);
+switch method
 
-% U holds the component matrices in Tucker tensor
-U = cell(1,D);
-for d=1:D
-    if (isinverse)
-        Kd = wpfun(method,p(d)-1,ceil(log2(targetdim(d)/(2*N-1))));
-        Kd = bsxfun(@times, Kd, 1./sqrt(sum(Kd.^2,2)));
-        U{d} = imresize(Kd,[p(d),targetdim(d)])';
-    else
-        Kd = wpfun(method,targetdim(d)-1,ceil(log2(p(d)/(2*N-1))));
-        Kd = bsxfun(@times, Kd, 1./sqrt(sum(Kd.^2,2)));
-        U{d} = imresize(Kd,[targetdim(d),p(d)]);
-    end
-end
-B = double(ttensor(A,U));
+    case 'interpolate'  % interpolation method
+        
+        U = cell(1,D);
+        for d=1:D
+            %xi = 1:p(d)/targetdim(d):p(d);
+            xi = linspace(1, p(d), targetdim(d));
+            j1 = floor(xi);
+            j2 = j1 + 1;
+            w1 = j2 - xi;
+            w2 = 1 - w1;
+            j2(end) = p(d);
+            % the interpolation matrix: targetdim(d)-by-p(d)
+            U{d} = sparse([1:targetdim(d) 1:targetdim(d)], [j1 j2], ...
+                [w1 w2], targetdim(d), p(d));
+        end
+        % cast back to the previous class
+        B = cast(double(ttensor(tensor(A),U)), class(A));
+        
+    case 'dct'  % discrete cosine transform
+        
+        B = resize(A, targetdim);
+        
+    case 'hosvd' % tensor PCA via HOSVD
+        
+        B = tpca(double(A), targetdim(1:end-1), 'method', 'hosvd');
+        B = cast(B, class(A));
+        
+    case '2dsvd' % tensor PCA via marginal SVD
+    
+        B = tpca(double(A), targetdim(1:end-1), 'method', '2dsvd');
+        B = cast(B, class(A));
+        
+    otherwise   % wavelet basis
+        
+        % obtain the support of the wavelets
+        [hr] = wfilters(method,'r');
+        N = fix(length(hr)/2);
+        
+        % U holds the component matrices in Tucker tensor
+        U = cell(1,D);
+        for d=1:D
+            if isinverse
+                Kd = wpfun(method,p(d)-1,ceil(log2(targetdim(d)/(2*N-1))));
+                Kd = bsxfun(@times, Kd, 1./sqrt(sum(Kd.^2,2)));
+                U{d} = imresize(Kd,[p(d),targetdim(d)])';
+            else
+                Kd = wpfun(method,targetdim(d)-1,ceil(log2(p(d)/(2*N-1))));
+                Kd = bsxfun(@times, Kd, 1./sqrt(sum(Kd.^2,2)));
+                U{d} = imresize(Kd,[targetdim(d),p(d)]);
+            end
+        end
+        % cast back to the previous class
+        B = cast(double(ttensor(tensor(A),U)), class(A));
+
+end%switch
 
 end
