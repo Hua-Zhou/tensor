@@ -27,7 +27,7 @@ function [beta0_final,beta_final,glmstats_final,dev_final] = ...
 %
 % Examples
 %
-% See also tucker_reg
+% See also kruskal_sparsereg, tucker_reg, tucker_sparsereg
 %
 % TODO
 %   - properly deal with the identifiability issue
