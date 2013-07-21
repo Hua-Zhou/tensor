@@ -1,8 +1,8 @@
 function [Mproj,PC,latent] = tpca(M,d,varargin)
-% TPCA Tensor principle component analysis
+% TPCA Tensor principle component analysis (tPCA)
 %
 % [MPROJ, PC, LATENT] = TPCA(M,d) performs the tensor version of the
-%   traditional PCA. Given n tensor observations, flatten each along mode i
+%   traditional PCA. Two versions are implemented. Given n tensor observations, flatten each along mode i
 %   to obtain a matrix, take outer product of the matrix (p_i-by-p_i), then
 %   do the classical PCA on the sum of outer products, retrieve the first
 %   d_i principal components (p_i-by-d_i), then scale the original tensor
@@ -23,7 +23,7 @@ function [Mproj,PC,latent] = tpca(M,d,varargin)
 %           mode. PC{i} has dimension p_i-by-d_i. In PCA literature, they
 %           are called the COEFFICIENTs
 %       LATENT: D-by-1 cell array containing the d_i eigen values along
-%           each mode
+%           each mode. Ordered from largest to smallest
 %
 % Examples
 %
@@ -91,6 +91,9 @@ if strcmpi(method,'hosvd')
     latent = cell(1,D);
     for dd=1:D
         latent{dd} = double(collapse(tucker_approx.core, -dd, @norm));
+        % sort in descending order
+        [latent{dd}, IX] = sort(latent{dd}, 'descend');
+        PC{dd} = PC{dd}(:,IX);
     end
     
 elseif strcmpi(method,'2dsvd')
@@ -107,12 +110,18 @@ elseif strcmpi(method,'2dsvd')
         C = C/n;
         [PC{dd},latent{dd}] = eigs(C,d(dd));
         latent{dd} = diag(latent{dd});
+        % sort in descending order
+        [latent{dd}, IX] = sort(latent{dd}, 'descend');
+        PC{dd} = PC{dd}(:,IX);
     end
     
 end%if
 
 % change of basis for original array data
-Mproj = ttm(TM,[cellfun(@(X) X',PC,'UniformOutput',false), eye(n)]);
+%Mproj = ttm(TM,[cellfun(@(X) X',PC,'UniformOutput',false), eye(n)]);
+PC = cellfun(@(X) X',PC,'UniformOutput',false);
+PC{D+1} = speye(n);
+Mproj = ttensor(TM, PC);
 Mproj = double(Mproj);
 
 
