@@ -92,6 +92,7 @@ argin.addParamValue('BurninTolFun', 1e-2, @(x) isnumeric(x) && x>0);
 argin.addParamValue('BurninReplicates', 5, @(x) isnumeric(x) && x>0);
 argin.addParamValue('PenaltyMaxIter', 50, @(x) isnumeric(x) && x>0);
 argin.addParamValue('PenaltyTolFun', 1e-3, @(x) isnumeric(x) && x>0);
+argin.addParamValue('warn', false, @(x) islogical(x));
 argin.addParamValue('weights', [], @(x) isnumeric(x) && all(x>=0));
 argin.parse(X,M,y,r,dist,lambda,pentype,penparam,varargin{:});
 
@@ -101,13 +102,20 @@ BurninTolFun = argin.Results.BurninTolFun;
 BurninReplicates = argin.Results.BurninReplicates;
 PenaltyMaxIter = argin.Results.BurninMaxIter;
 PenaltyTolFun = argin.Results.PenaltyTolFun;
+warn = argin.Results.warn;
 wts = argin.Results.weights;
 if (isempty(wts))
     wts = ones(size(X,1),1);
 end
 
+% check positivity of tuning parameter
+if lambda==0
+    error('tensorreg:kruskal_sparsereg:nopen', ...
+        'lambda=0 (no penalization); call kruskal_reg instead');    
+end
+
 % check validity of rank r
-if (isempty(r))
+if isempty(r)
     r = 1;
 end
 
@@ -247,10 +255,12 @@ end
 beta0_final = beta0;
 beta_final = beta;
 
-% turn off warnings
-warning('off','stats:glmfit:IterationLimit');
-warning('off','stats:glmfit:BadScaling');
-warning('off','stats:glmfit:IllConditioned');
+% turn off warnings from glmfit_priv
+if ~warn
+    warning('off','stats:glmfit:IterationLimit');
+    warning('off','stats:glmfit:BadScaling');
+    warning('off','stats:glmfit:IllConditioned');
+end
 if (~strcmpi(Display,'off'))
     display(' ');
     display('==================');
@@ -293,6 +303,11 @@ if (~strcmpi(Display,'off'))
     disp(' ');
 end
 
-warning on all;
+% turn warnings on
+if ~warn
+    warning('on','stats:glmfit:IterationLimit');
+    warning('on','stats:glmfit:BadScaling');
+    warning('on','stats:glmfit:IllConditioned');
+end
 
 end
