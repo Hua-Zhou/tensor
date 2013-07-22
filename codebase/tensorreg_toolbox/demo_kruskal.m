@@ -1,4 +1,4 @@
-%% 2D covariates, linear regression
+%% Kruskal linear regression, 2D covariates
 
 clear;
 % reset random seed
@@ -76,7 +76,7 @@ title({['rank=3, ', ' BIC=',num2str(glmstats3{end}.BIC,5)]});
 axis equal;
 axis tight;
 
-%% 2D covariates, sparse linear regression
+%% sparse Kruskal linear regression, 2D covariates
 
 % set lasso penalty and tuning parameter values
 pentype = 'enet';
@@ -142,7 +142,7 @@ title({['TR(3),' pentype '(' num2str(penparam), '), \lambda=', ...
 axis equal;
 axis tight;
 
-%% 2D covariates, logistic regression
+%% Kruskal logistic regression, 2D covariates
 
 clear;
 % reset random seed
@@ -219,7 +219,7 @@ title({['rank=3, ', ' BIC=',num2str(glmstats3{end}.BIC,5)]});
 axis equal;
 axis tight;
 
-%% 2D covariates, sparse logistic regression
+%% sparse Kruskal logistic regression, 2D covariates
 
 % set lasso penalty and tuning parameter values
 pentype = 'enet';
@@ -285,7 +285,7 @@ title({['TR(3),' pentype '(' num2str(penparam), '), \lambda=', ...
 axis equal;
 axis tight;
 
-%% 3D covaraites, linear regression
+%% Kruskal linear regression, 3D covariates
 
 clear;
 % reset random seed
@@ -370,7 +370,7 @@ zlim([1 p3]);
 title({['rank=3, ', ' BIC=', num2str(glmstats3{end}.BIC,5)]});
 axis equal;
 
-%% 3D covaraites, sparse linear regression
+%% sparse Kruskal linear regression, 3D covariates
 
 % set lasso penalty and tuning parameter values
 pentype = 'enet';

@@ -14,9 +14,21 @@ function [beta0_final,beta_final,glmstats_final,dev_final] = ...
 %   beta_final - a tensor of regression coefficientsn for array variates
 %   glmstats_final - GLM regression summary statistics for regular
 %       covariates
-
-% COPYRIGHT: North Carolina State University
-% AUTHOR: Hua Zhou (hua_zhou@ncsu.edu)
+%
+% Examples
+%
+% See also kruskal_reg, kruskal_sparsereg, tucker_sparsereg
+%
+% TODO
+%   - optimize the computation involving Kronecker product
+%   - properly deal with the identifiability issue
+%
+% Reference
+%   X Li, H Zhou, and L Li (2013) Tucker tensor regression and neuroimaging
+%   analysis, arXiv <http://arxiv.org/abs/1304.5637>.
+%
+% COPYRIGHT 2011-2013 North Carolina State University
+% Hua Zhou <hua_zhou@ncsu.edu>
 
 % parse inputs
 argin = inputParser;

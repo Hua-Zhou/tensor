@@ -37,7 +37,7 @@ function [beta0_final,beta_final,glmstats_final,dev_final] = ...
 %   neuroimaging data analysis, JASA 108(502):540-552
 %
 % COPYRIGHT 2011-2013 North Carolina State University
-% Hua Zhou (hua_zhou@ncsu.edu) and Lexin Li
+% Hua Zhou <hua_zhou@ncsu.edu>
 
 % parse inputs
 argin = inputParser;
