@@ -73,6 +73,7 @@ argin.addParamValue('Display', 'off', @(x) strcmp(x,'off')||strcmp(x,'iter'));
 argin.addParamValue('MaxIter', 100, @(x) isnumeric(x) && x>0);
 argin.addParamValue('TolFun', 1e-4, @(x) isnumeric(x) && x>0);
 argin.addParamValue('Replicates', 5, @(x) isnumeric(x) && x>0);
+argin.addParamValue('warn', false, @(x) islogical(x));
 argin.addParamValue('weights', [], @(x) isnumeric(x) && all(x>=0));
 argin.parse(X,M,y,r,dist,varargin{:});
 
@@ -80,6 +81,7 @@ Display = argin.Results.Display;
 MaxIter = argin.Results.MaxIter;
 TolFun = argin.Results.TolFun;
 Replicates = argin.Results.Replicates;
+warn = argin.Results.warn;
 wts = argin.Results.weights;
 
 % check validity of rank r
@@ -108,10 +110,12 @@ if (n<p0 || n<r*max(p(1:end-1)))
         'sample size n is not large enough to estimate all parameters!');
 end
 
-% turn off warnings
-warning('off','stats:glmfit:IterationLimit');
-warning('off','stats:glmfit:BadScaling');
-warning('off','stats:glmfit:IllConditioned');
+% turn off warnings from glmfit_priv
+if ~warn
+    warning('off','stats:glmfit:IterationLimit');
+    warning('off','stats:glmfit:BadScaling');
+    warning('off','stats:glmfit:IllConditioned');
+end
 
 % pre-allocate variables
 glmstats = cell(1,d+1);
@@ -214,7 +218,13 @@ for rep=1:Replicates
     end
     
 end
-warning on all;
+
+% turn warnings on
+if ~warn
+    warning('on','stats:glmfit:IterationLimit');
+    warning('on','stats:glmfit:BadScaling');
+    warning('on','stats:glmfit:IllConditioned');
+end
 
 % output BIC of the final model. Note deviance = -2*log-likelihood
 if (d==2)
