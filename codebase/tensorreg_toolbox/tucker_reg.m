@@ -67,6 +67,7 @@ argin.addParamValue('Display', 'off', @(x) strcmp(x,'off')||strcmp(x,'iter'));
 argin.addParamValue('MaxIter', 100, @(x) isnumeric(x) && x>0);
 argin.addParamValue('TolFun', 1e-4, @(x) isnumeric(x) && x>0);
 argin.addParamValue('Replicates', 5, @(x) isnumeric(x) && x>0);
+argin.addParamValue('warn', false, @(x) islogical(x));
 argin.addParamValue('weights', [], @(x) isnumeric(x) && all(x>=0));
 argin.parse(X,M,y,r,dist,varargin{:});
 
@@ -74,11 +75,13 @@ Display = argin.Results.Display;
 MaxIter = argin.Results.MaxIter;
 TolFun = argin.Results.TolFun;
 Replicates = argin.Results.Replicates;
+warn = argin.Results.warn;
 wts = argin.Results.weights;
 
 % check validity of rank r
 if (isempty(r))
-    error('need to input the d-by-1 rank vector!');
+    error('tensorreg:tucker_reg:rankinput', ...
+        'need to input the d-by-1 rank vector!');
 elseif (any(r==0))
     [beta0_final,dev_final,glmstats_final] = ...
         glmfit_priv(X,y,dist,'constant','off','weights',wts);
@@ -93,16 +96,20 @@ end
 d = ndims(M)-1; % dimension of array variates
 p = size(M);    % sizes of array variates
 if (n~=p(end))
-    error('sample size in X dose not match sample size in M');
+    error('tensorreg:tucker_reg:samplesize', ...
+        'sample size in X dose not match sample size in M');
 end
 if (n<p0 || n<max(r.*p(1:end-1)))    
-    error('sample size n is not large enough to estimate all parameters!');
+    error('tensorreg:tucker_reg:smalln', ...
+        'sample size n is not large enough to estimate all parameters!');
 end
 
 % turn off warnings
-warning('off','stats:glmfit:IterationLimit');
-warning('off','stats:glmfit:BadScaling');
-warning('off','stats:glmfit:IllConditioned');
+if ~warn
+    warning('off','stats:glmfit:IterationLimit');
+    warning('off','stats:glmfit:BadScaling');
+    warning('off','stats:glmfit:IllConditioned');
+end
 
 % pre-allocate variables
 glmstats = cell(1,d+2);
@@ -156,8 +163,10 @@ for rep=1:Replicates
             for j=1:d
                 colnorms = sqrt(sum(beta.U{j}.^2,1));
                 if any(colnorms==0)
-                    warning('tuckerreg:degenerateU', ...
-                        'zero columns of beta.U found');
+                    if warn
+                        warning('tensorreg:tucker_reg:degenerateU', ...
+                            'zero columns of beta.U found');
+                    end
                     colnorms(colnorms==0) = 1;
                 end
                 beta.U{j} = bsxfun(@times,beta.U{j},1./colnorms);
@@ -223,7 +232,13 @@ for rep=1:Replicates
     end
     
 end
-warning on all;
+% turn warnings on
+if ~warn
+    warning('on','stats:glmfit:IterationLimit');
+    warning('on','stats:glmfit:BadScaling');
+    warning('on','stats:glmfit:IllConditioned');
+end
+
 
     function X = arraykron(U)
         %ARRAYKRON Kronecker product of matrices in an array
