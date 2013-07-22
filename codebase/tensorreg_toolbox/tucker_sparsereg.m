@@ -81,6 +81,7 @@ argin.addParamValue('BurninTolFun', 1e-2, @(x) isnumeric(x) && x>0);
 argin.addParamValue('BurninReplicates', 10, @(x) isnumeric(x) && x>0);
 argin.addParamValue('PenaltyMaxIter', 50, @(x) isnumeric(x) && x>0);
 argin.addParamValue('PenaltyTolFun', 1e-3, @(x) isnumeric(x) && x>0);
+argin.addParamValue('warn', false, @(x) islogical(x));
 argin.addParamValue('weights', [], @(x) isnumeric(x) && all(x>=0));
 argin.parse(X,M,y,r,dist,lambda,pentype,penparam,varargin{:});
 
@@ -90,14 +91,22 @@ BurninTolFun = argin.Results.BurninTolFun;
 BurninReplicates = argin.Results.BurninReplicates;
 PenaltyMaxIter = argin.Results.BurninMaxIter;
 PenaltyTolFun = argin.Results.PenaltyTolFun;
+warn = argin.Results.warn;
 wts = argin.Results.weights;
 if (isempty(wts))
     wts = ones(size(X,1),1);
 end
 
+% check positivity of tuning parameter
+if lambda==0
+    error('tensorreg:tucker_sparsereg:nopen', ...
+        'lambda=0 (no penalization); call tucker_reg instead');    
+end
+
 % check validity of rank r
 if (isempty(r))
-    error('need to input the d-by-1 rank vector!');
+    error('tensorreg:tucker_sparsereg:norank', ...
+        'need to input the d-by-1 rank vector!');
 elseif (any(r==0))
     [beta0_final,dev_final,glmstats] = ...
         glmfit_priv(X,y,dist,'constant','off','weights',wts); %#ok<ASGLU>
@@ -125,19 +134,16 @@ end
 d = ndims(M)-1; % dimension of array variates
 p = size(M);    % sizes array variates
 if (n~=p(end))
-    error('sample size in X dose not match sample size in M');
+    error('tensorreg:tucker_sparsereg:nmismatch', ...
+        'sample size in X dose not match sample size in M');
 end
 if (n<p0 || n<max(r.*p(1:end-1)))    
-    error('sample size n is not large enough to estimate all parameters!');
+    error('tensorreg:tucker_sparsereg:smalln', ...
+        'sample size n is not large enough to estimate all parameters!');
 end
 
 % convert M into a tensor T
 TM = tensor(M);
-
-% turn off warnings
-warning('off','stats:glmfit:IterationLimit');
-warning('off','stats:glmfit:BadScaling');
-warning('off','stats:glmfit:IllConditioned');
 
 % Burn-in stage (loose convergence criterion)
 if (~strcmpi(Display,'off'))
@@ -168,11 +174,17 @@ end
 Mn = double(tenmat(TM,d+1,1:d));    % n-by-prod(p)
 
 % penalization stage
-if (~strcmpi(Display,'off'))
+if ~strcmpi(Display,'off')
     display(' ');
     display('==================');
     display('Penalization stage');
     display('==================');
+end
+% turn off warnings
+if ~warn
+    warning('off','stats:glmfit:IterationLimit');
+    warning('off','stats:glmfit:BadScaling');
+    warning('off','stats:glmfit:IllConditioned');
 end
 glmstats = cell(1,d+2);
 dev0 = inf;
@@ -260,7 +272,7 @@ beta0_final = beta0;
 beta_final = beta;
 
 % turn off warnings
-if (~strcmpi(Display,'off'))
+if ~strcmpi(Display,'off')
     display(' ');
     display('==================');
     display('Scaling stage');
@@ -318,7 +330,11 @@ if (~strcmpi(Display,'off'))
 end
 
 % turn warnings on
-warning on all;
+if ~warn
+    warning('on','stats:glmfit:IterationLimit');
+    warning('on','stats:glmfit:BadScaling');
+    warning('on','stats:glmfit:IllConditioned');
+end
 
     function X = arraykron(U)
         %ARRAYKRON Kronecker product of matrices in an array
