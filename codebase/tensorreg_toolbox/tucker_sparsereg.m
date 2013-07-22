@@ -1,6 +1,39 @@
 function [beta0_final,beta_final,beta_scale,glmstats] = ...
     tucker_sparsereg(X,M,y,r,dist,lambda,pentype,penparam,varargin)
-% TENSOR_SPARSEREG  Rank-r sparse Tucker GLM
+% TUCKER_SPARSEREG Fit the rank-r GLM sparse Tucker tensor regression
+%   [BETA0,BETA,BETA_SCALE,GLMSTATS] =
+%   TUCKER_SPARSEREG(X,M,Y,R,DIST,LAMBDA,PENTYPE,PENPARAM) fits the sparse
+%   Tucker tensor regression using the regular covariate matrix X,
+%   multidimensional array(or tensor) variates M, response Y, rank of the
+%   Tucker tensor regression R, the assumed distribution of the model DIST,
+%   the penalty PENTYPE at fixed tuning parameter value LAMBDA, and
+%   the index of the penalty type PENPARAM. Available value of DIST is are
+%   'normal', 'binomial', 'gamma', 'inverse gaussian' and 'poisson'. For
+%   the input value PENTYPE, available penalties are 'enet',
+%   'log','mcp','power' and 'scad'. The result BETA0 is the regression
+%   coeffiient vector for the regular covariates matrix X, BETA is the
+%   tensor regression coefficient of the tensor covariates M, BETA_SCALE is
+%   the tensr of the scaling constants for the tensor covariates M,
+%   GLMSTATS is the summary statistics of GLM fit from the last iteration.
+%
+%   [BETA0,BETA,BETA_SCALE,GLMSTATS] =
+%   TUCKER_SPARSEREG(X,M,Y,R,DIST,LAMBDA,PENTYPE,PENPARAM,'PARAM1',val1,
+%   'PARAM2',val2,...) allows you to specify optional parameters to control
+%   the model fit. Availavle parameter name/value pairs are :
+%
+%       'Display' - 'off' (default) or 'iter'
+%
+%       'BurninMaxIter' - Max. iter. for the burn-in runs, default is 20
+%
+%       'BurninTolFun' - Tolerance for the burn-in runs, default is 1e-2
+%
+%       'BurninReplicates' - Number of the burn-in runs, default is 10
+%
+%       'PenaltyMaxIter' - Max. iters. at penalization stage, default is 50
+%
+%       'PenaltyTolFun' - Tolerence at penalization stage, default is 1e-3
+%
+%       'weights' - observation weights, default is ones for each obs.
 %
 % INPUT:
 %   X - n-by-p0 regular covariate matrix
@@ -20,7 +53,15 @@ function [beta0_final,beta_final,beta_scale,glmstats] = ...
 %                coefficients
 %   glmstats    - GLM statistics from the last fitting of the regular
 %               covariates
-
+%
+% Examples
+%
+% See also kruskal_reg, kruskal_sparsereg, matrix_sparsereg, tucker_reg.
+%
+% Reference
+%   X Li, H Zhou, L Li (2013) Tucker Tensor Regression and Neuroimaging
+%   Analysis, submitted. <http://arxiv.org/abs/1304.5637>
+%
 % COPYRIGHT: North Carolina State University
 % AUTHOR: Hua Zhou (hua_zhou@ncsu.edu), Lexin Li, Xiaoshan Li
 

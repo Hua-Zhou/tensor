@@ -1,8 +1,29 @@
 function [beta0,B,stats] = matrix_sparsereg(X,M,y,lambda,dist,varargin)
 % MATRIX_SPARSEREG Fit spectrum regularized matrix regression
+%   [BETA0,B,STATS] = MATRIX_SPARSEREG(X,M,Y,LAMBDA,DIST) fits the spectrum
+%   regularized matrix regression using the regular covariate matrix X,
+%   multidimensional array(or tensor) variates M, response Y, and the
+%   assumed distribution of the model DIST. Available value of DIST is are
+%   'binomial', 'gamma', 'inverse gaussan', 'normal' and 'poisson'. The
+%   result BETA0 is the regression coefficient vector for the regular
+%   covariates matrix X, B is the tensor regression coefficient of tensor
+%   covariates M, STATS is a collection of algorithmic statistics including
+%   number of iterations, degree of freedom, AIC and BIC.
 %
-% [BETA0,B,STATS] = MATRIX_SPARSEREG(X,M,Y,LAMBDA,DIST) fits the spectrum
-%   regularized matrix regression.
+%   [BETA0,B,STATS] =
+%   MATRIX_SPARSEREG(X,M,Y,LAMBDA,DIST,'PARAM1',val1,'PARAM2',val2...)
+%   allows you to specify optional parameters to control the model fit.
+%   Available parameter name/value pairs are :
+%
+%       'B0' - intial value for matrix covariate
+%       'delta' - algo. parameter for the Nesterov method, default is 1e-3
+%       'Display' - 'off' (default) or 'iter'
+%       'MaxIter' - maximum iteration, default is 500
+%       'penalty' - penalty name, default is enet(1) (nuclear norm)
+%       'penparam' - penalty param., default is enet(1) (nuclear norm)
+%       'TolFun' - tolerence in objective value, default is 1e-3
+%       'Warnings' - turn on/off glimfit warnings, default is 'off'
+%       'weights' - observation weights, default is ones for each obs.
 %
 %   INPUT:
 %       X: n-by-p0 regular covariate matrix

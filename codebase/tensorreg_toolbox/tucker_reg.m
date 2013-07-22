@@ -1,6 +1,31 @@
 function [beta0_final,beta_final,glmstats_final,dev_final] = ...
     tucker_reg(X,M,y,r,dist,varargin)
-% TUCKER_REG Fit rank-r Tucker tensor regression
+% TUCKER_REG Fit the rank-r Tucker tensor regression
+%   [BETA0,BETA,GLMSTATS,DEV] = TUCKER_REG(X,M,Y,R,DIST) fits the Tucker
+%   tensor regression using the regular covariate matrix X,
+%   multidimensional array(or tensor) variates M, response Y, rank of the
+%   Tucker tensor regression R and the assumed distribution of the model
+%   DIST. Available value of DIST is are 'binomial', 'gamma', 'inverse
+%   gaussan', 'normal' and 'poisson'. The result BETA0 is the regression
+%   coefficient vector for the regular covariates matrix X, BETA is the
+%   tensor regression coefficient of tensor covariates M, GLMSTATS is the
+%   summary statistics of GLM fit from the last iteration and DEV is the
+%   deviance of final model.
+%
+%   [BETA0,BETA,GLMSTATS,DEV] =
+%   TUCKER_REG(X,M,Y,R,DIST,'PARAM1',val1,'PARAM2',val2...)allows you to
+%   specify optional parameters to control the model fit. Available
+%   parameter name/value pairs are :
+%
+%       'Display' - 'off' (default) or 'iter'
+%
+%       'MaxIter' - maximum iteration, default is 100
+%
+%       'TolFun' - tolerence in objective value, default is 1e-4
+%
+%       'Replicates' - # of intitial points to try, default is 5
+%
+%       'weights' - observation weights, default is ones for each obs.
 %
 % INPUT:
 %   X - n-by-p0 regular covariate matrix
@@ -17,7 +42,8 @@ function [beta0_final,beta_final,glmstats_final,dev_final] = ...
 %
 % Examples
 %
-% See also kruskal_reg, kruskal_sparsereg, tucker_sparsereg
+% See also kruskal_reg, kruskal_sparsereg, matrix_sparsereg,
+% tucker_sparsereg
 %
 % TODO
 %   - optimize the computation involving Kronecker product
