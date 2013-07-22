@@ -169,31 +169,16 @@ for rep=1:Replicates
         % cyclic update of the array coefficients
         eta0 = X*beta0;
         for j=1:d
-            if (j==1)
-                cumkr = ones(1,r);
-            end
-            if (exist('Md','var'))
-                if (j==d)
-                    Xj = reshape(Md{j}*cumkr,n,p(j)*r);
-                else
-                    Xj = reshape(Md{j}*khatrirao([beta.U(d:-1:j+1),cumkr]),...
-                        n,p(j)*r);
-                end
-            else
-                if (j==d)
-                    Xj = reshape(double(tenmat(TM,[d+1,j]))*cumkr, ...
-                        n,p(j)*r);
-                else
-                    Xj = reshape(double(tenmat(TM,[d+1,j])) ...
-                        *khatrirao({beta.U{d:-1:j+1},cumkr}),n,p(j)*r);
-                end
-            end
+            beta.U{j} = speye(r);
+            ix = 1:d; 
+            ix(j) = [];
+            Xj = ttt(TM, tensor(beta), ix);
+            Xj = double(tenmat(Xj, 2));
             [betatmp,dummy,glmstats{j}] = ...
                 glmfit_priv([Xj,eta0],y,dist,'constant','off', ...
                 'weights',wts); %#ok<ASGLU>
             beta{j} = reshape(betatmp(1:end-1),p(j),r);
             eta0 = eta0*betatmp(end);
-            cumkr = khatrirao(beta{j},cumkr);
         end
     end
     
