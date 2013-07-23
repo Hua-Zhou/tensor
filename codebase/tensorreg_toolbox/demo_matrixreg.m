@@ -186,7 +186,7 @@ b((size(b,1)/4):(size(b,1)/4)+size(shape,1)-1, ...
 display(size(b));
 
 %%
-% True coefficients for regulari (non-array) covariates
+% True coefficients for regular (non-array) covariates
 p0 = 5;
 b0 = ones(p0,1);
 
