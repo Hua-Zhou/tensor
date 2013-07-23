@@ -5,6 +5,12 @@ clear;
 s = RandStream('mt19937ar','Seed',2);
 RandStream.setGlobalStream(s);
 
+%%
+% True coefficients for regular (non-array) covariates
+p0 = 5;
+b0 = ones(p0,1);
+
+%%
 % 2D true signal: 64-by-64 cross
 shape = imread('cross.gif'); 
 shape = imresize(shape,[32,32]); % 32-by-32
@@ -12,25 +18,28 @@ b = zeros(2*size(shape));
 b((size(b,1)/4):(size(b,1)/4)+size(shape,1)-1, ...
     (size(b,2)/4):(size(b,2)/4)+size(shape,2)-1) = shape;
 [p1,p2] = size(b);
-% true coefficients for regular (non-array) covariates
-p0 = 5;
-b0 = ones(p0,1);
+display(size(b));
 
-% simulate covariates
+%%
+% Simulate covariates
 n = 500;    % sample size
 X = randn(n,p0);   % n-by-p0 regular design matrix
 M = tensor(randn(p1,p2,n));  % p1-by-p2-by-n matrix variates
-% the systematic part
+display(size(M));
+
+%%
+% Simulate responses
 mu = X*b0 + double(ttt(tensor(b), M, 1:2));
-% simulate responses
 sigma = 1;  % noise level
 y = mu + sigma*randn(n,1);
 
-% determine max lambda to start
+%%
+% Determine max lambda to start
 [~,~,stats] = matrix_sparsereg(X,M,y,inf,'normal');
 maxlambda = stats.maxlambda*.95;
 
-% fit nuclear norm regularized linear regression at grid points
+%%
+% Fit nuclear norm regularized linear regression at grid points
 gridpts = 10;
 lambdas = zeros(1,gridpts);
 gs = 2/(1+sqrt(5));
@@ -52,7 +61,8 @@ for i=1:gridpts
 end
 toc;
 
-% display true signal and snapshots along nuclear norm solution path
+%%
+% Display true signal and snapshots along nuclear norm solution path
 figure; hold on;
 set(gca,'FontSize',20);
 
@@ -75,7 +85,8 @@ for i=[gridpts round(gridpts/2) 1]
     axis tight;
 end
 
-% display AIC/BIC trace plot
+%%
+% Display AIC/BIC trace plot
 
 figure;
 set(gca,'FontSize',20);
@@ -88,13 +99,18 @@ legend('AIC', 'BIC', 'Location', 'northwest');
 
 %% Compare to lasso penalized linear regression
 
-TM = tenmat(tensor(M),3,[1 2]); % transform matrix variates to vector form
+%%
+% Transform matrix variates to vector form
+TM = tenmat(tensor(M),3,[1 2]);
 Xall = [double(TM) X];
 
-% determine max lambda to start
+%%
+% Determine max lambda to start
 lambdastart = max(lsq_maxlambda(sum(Xall.^2),-y'*Xall,'enet',1));
 maxlambda_lasso = lambdastart*.95;
 
+%%
+% Optimization at grid points
 gridpts = 10;
 B_lasso = cell(1,gridpts);
 BIC_lasso = zeros(1,gridpts);
@@ -117,7 +133,8 @@ for i=1:gridpts
 end
 toc;
 
-% display true signal and snapshots along lasso solution path
+%%
+% Display true signal and snapshots along lasso solution path
 figure; hold on;
 set(gca,'FontSize',20);
 
@@ -140,7 +157,8 @@ for i=[gridpts round(gridpts/2) 1]
     axis tight;
 end
 
-% lasso BIC path
+%%
+% Lasso BIC path
 
 figure;
 set(gca,'FontSize',20);
@@ -157,32 +175,40 @@ clear;
 s = RandStream('mt19937ar','Seed',2);
 RandStream.setGlobalStream(s);
 
-% 2D true signal 64-by-64: cross
+%%
+% 2D true signal: 64-by-64 cross
 shape = imread('cross.gif'); 
 shape = imresize(shape,[32,32]); % 32-by-32
 b = zeros(2*size(shape));
 b((size(b,1)/4):(size(b,1)/4)+size(shape,1)-1, ...
     (size(b,2)/4):(size(b,2)/4)+size(shape,2)-1) = shape;
 [p1,p2] = size(b);
-% true coefficients 
+display(size(b));
+
+%%
+% True coefficients for regulari (non-array) covariates
 p0 = 5;
 b0 = ones(p0,1);
 
-% simulate covariates
+%%
+% Simulate covariates
 n = 750;    % sample size
 X = randn(n,p0);   % n-by-p regular design matrix
 M = tensor(randn(p1,p2,n));  % n p1-by-p2 matrix variates
-% the systematic part
+display(size(M));
+
+% Simulate Poisson count responses from the systematic components
 mu = X*b0 + double(ttt(tensor(b), M, 1:2));
 mu = mu/(max(abs(mu)))*5;   % scale to [-5, 5], to avoid overflow
-% simulate Poisson count responses from the systematic components
 y = poissrnd(exp(mu));
 
-% determine max lambda to start
+%%
+% Determine max lambda to start
 [~,~,stats] = matrix_sparsereg(X,M,y,inf,'poisson');
 maxlambda = stats.maxlambda*.95;
 
-% fit nuclear norm regularized Poisson regression at grid points
+%%
+% Fit nuclear norm regularized Poisson regression at grid points
 gridpts = 10;
 lambdas = zeros(1,gridpts);
 gs = 2/(1+sqrt(5));
@@ -204,7 +230,8 @@ for i=1:gridpts
 end
 toc
 
-% display true signal and snapshots along nuclear norm solution path
+%%
+% Display true signal and snapshots along nuclear norm solution path
 figure; hold on;
 set(gca,'FontSize',20);
 
@@ -227,8 +254,8 @@ for i=[gridpts round(gridpts/2) 1]
     axis tight;
 end
 
-% display AIC/BIC trace plot
-
+%%
+% Display AIC/BIC trace plot
 figure;
 set(gca,'FontSize',20);
 semilogx(lambdas, AIC, '-+', lambdas, BIC, '-o');
@@ -239,16 +266,21 @@ legend('AIC', 'BIC', 'Location', 'northwest');
 
 %% Compare to lasso penalized Poisson (log-linear) regression
 
-TM = tenmat(tensor(M),3,[1 2]); % transform matrix variates to vector form
+%%
+% Transform matrix variates to vector form
+TM = tenmat(tensor(M),3,[1 2]); 
 Xall = [double(TM) X];
 
-% determine max lambda to start
-lambdastart = 0;            % find the maximum tuning parameter to start
+%%
+% Determine max lambda to start
+lambdastart = 0;
 for j=1:numel(b)
     lambdastart = max(lambdastart,glm_maxlambda(Xall(:,j),y,'loglinear'));
 end
 maxlambda_lasso = lambdastart*.95;
 
+%%
+% Optimization at grid points
 gridpts = 10;
 B_lasso = cell(1,gridpts);
 BIC_lasso = zeros(1,gridpts);
@@ -274,7 +306,8 @@ for i=1:gridpts
 end
 toc;
 
-% display true sinal and snapshots along lasso solution path
+%%
+% Display true sinal and snapshots along lasso solution path
 figure; hold on;
 set(gca,'FontSize',20);
 
@@ -297,8 +330,8 @@ for i=[gridpts round(gridpts/2) 1]
     axis tight;
 end
 
-% lasso BIC path
-
+%%
+% Lasso BIC path
 figure;
 set(gca,'FontSize',20);
 semilogx(lambdas_lasso,BIC_lasso,'-o');
@@ -314,31 +347,40 @@ clear;
 s = RandStream('mt19937ar','Seed',2);
 RandStream.setGlobalStream(s);
 
-% 2D true signal 64-by-64: cross
+%%
+% 2D true signal: 64-by-64 cross
 shape = imread('cross.gif'); 
 shape = imresize(shape,[32,32]); % 32-by-32
 b = zeros(2*size(shape));
 b((size(b,1)/4):(size(b,1)/4)+size(shape,1)-1, ...
     (size(b,2)/4):(size(b,2)/4)+size(shape,2)-1) = shape;
 [p1,p2] = size(b);
-% true coefficients 
+display(size(b));
+
+%%
+% True coefficients for regular (non-array) covariates
 p0 = 5;
 b0 = ones(p0,1);
 
-% simulate covariates
+%%
+% Simulate covariates
 n = 1000;    % sample size
 X = randn(n,p0);   % n-by-p regular design matrix
 M = tensor(randn(p1,p2,n));  % n p1-by-p2 matrix variates
-% the systematic part
+display(size(M));
+
+%%
+% Simulate binary responses from the systematic components
 mu = X*b0 + double(ttt(tensor(b), M, 1:2));
-% simulate binary responses from the systematic components
 y = binornd(1, 1./(1+exp(-mu)));
 
-% determine max lambda to start
+%%
+% Determine max lambda to start
 [~,~,stats] = matrix_sparsereg(X,M,y,inf,'binomial');
 maxlambda = stats.maxlambda*0.95;
 
-% fit nuclear norm regularized logistic regression at grid points
+%%
+% Fit nuclear norm regularized logistic regression at grid points
 gridpts = 10;
 lambdas = zeros(1,gridpts);
 gs = 2/(1+sqrt(5));
@@ -361,7 +403,8 @@ for i=1:gridpts
 end
 toc
 
-% display true signal and and snapshots along nuclear norm solution path
+%%
+% Display true signal and and snapshots along nuclear norm solution path
 figure; hold on;
 set(gca,'FontSize',20);
 
@@ -384,8 +427,8 @@ for i=[gridpts round(gridpts/2) 1]
     axis tight;
 end
 
-% display AIC/BIC trace plot
-
+%%
+% Display AIC/BIC trace plot
 figure;
 set(gca,'FontSize',20);
 semilogx(lambdas, AIC, '-+', lambdas, BIC, '-o');
@@ -397,16 +440,21 @@ legend('AIC', 'BIC', 'Location', 'northwest');
 
 %% Compare to lasso penalized logistic regression
 
-TM = tenmat(tensor(M),3,[1 2]); % transform matrix variates to vector form
+%%
+% Transform matrix variates to vector form
+TM = tenmat(tensor(M),3,[1 2]); 
 Xall = [double(TM) X];
 
-% determine max lambda to start
+%%
+% Determine max lambda to start
 lambdastart = 0;            % find the maximum tuning parameter to start
 for j=1:numel(b)
     lambdastart = max(lambdastart,glm_maxlambda(Xall(:,j),y,'logistic'));
 end
 maxlambda_lasso = lambdastart;
 
+%% 
+% Optimization at grid points
 gridpts = 10;
 B_lasso = cell(1,gridpts);
 BIC_lasso = zeros(1,gridpts);
@@ -432,7 +480,8 @@ for i=1:gridpts
 end
 toc;
 
-% display true signal and snapshots along lasso solution path
+%%
+% Display true signal and snapshots along lasso solution path
 figure; hold on;
 set(gca,'FontSize',20);
 
@@ -455,8 +504,8 @@ for i=[gridpts round(gridpts/2) 1]
     axis tight;
 end
 
-% lasso BIC path
-
+%%
+% Lasso BIC path
 figure;
 set(gca,'FontSize',20);
 semilogx(lambdas_lasso,BIC_lasso,'-o');
