@@ -194,6 +194,11 @@ s = RandStream('mt19937ar','Seed',2);
 RandStream.setGlobalStream(s);
 
 %%
+% true coefficients for regular (non-narray) covariates
+p0 = 5;
+b0 = ones(p0,1);
+
+%%
 % 2D true signal: 64-by-64 cross
 shape = imread('cross.gif'); 
 shape = array_resize(shape,[32,32]); % 32-by-32
@@ -201,9 +206,7 @@ b = zeros(2*size(shape));
 b((size(b,1)/4):(size(b,1)/4)+size(shape,1)-1, ...
     (size(b,2)/4):(size(b,2)/4)+size(shape,2)-1) = shape;
 [p1,p2] = size(b);
-% true coefficients 
-p0 = 5;
-b0 = ones(p0,1);
+display(size(b));
 
 %%
 % Simulate covariates
@@ -305,7 +308,7 @@ axis tight;
 % Set lasso penalty and tuning parameter values
 pentype = 'enet';
 penparam = 1;
-lambda = [1,10,200];
+lambda = [1,10,100];
 
 %%
 % Estimate using Tucker sparse logistic regression - lambda 1
@@ -378,7 +381,7 @@ s = RandStream('mt19937ar','Seed',2);
 RandStream.setGlobalStream(s);
 
 %%
-% True coefficients for regular covariates
+% True coefficients for regular (non-array) covariates
 p0 = 5;
 b0 = ones(p0,1);
 
@@ -388,6 +391,7 @@ b = zeros(25,25,25);
 b(6:10,6:10,6:10) = 1;
 b(18:22,18:22,8:22) = 1;
 [p1, p2, p3] = size(b);
+display(size(b));
 
 %%
 % Simulate covariates
