@@ -13,7 +13,7 @@ b0 = ones(p0,1);
 %%
 % 2D true signal: 64-by-64 cross
 shape = imread('cross.gif'); 
-shape = imresize(shape,[32,32]); % 32-by-32
+shape = array_resize(shape,[32,32]); % 32-by-32
 b = zeros(2*size(shape));
 b((size(b,1)/4):(size(b,1)/4)+size(shape,1)-1, ...
     (size(b,2)/4):(size(b,2)/4)+size(shape,2)-1) = shape;
@@ -196,7 +196,7 @@ RandStream.setGlobalStream(s);
 %%
 % 2D true signal: 64-by-64 cross
 shape = imread('cross.gif'); 
-shape = imresize(shape,[32,32]); % 32-by-32
+shape = array_resize(shape,[32,32]); % 32-by-32
 b = zeros(2*size(shape));
 b((size(b,1)/4):(size(b,1)/4)+size(shape,1)-1, ...
     (size(b,2)/4):(size(b,2)/4)+size(shape,2)-1) = shape;

@@ -258,8 +258,8 @@ end
         %   Version: 03/10/10
         %   Authors: Laurent Sorber (Laurent.Sorber@cs.kuleuven.be)
         
-        [I J] = size(A);
-        [K L] = size(B);
+        [I, J] = size(A);
+        [K, L] = size(B);
         if ~issparse(A) && ~issparse(B)
             A = reshape(A,[1 I 1 J]);
             B = reshape(B,[K 1 L 1]);

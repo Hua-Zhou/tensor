@@ -31,9 +31,11 @@ If you want to run sparse tensor regression, you also need to download and insta
 
 ### Tutorials
 
+* [Resize arrays](./html/demo_resize.html)
 * [Kruskal regression and sparse Kruskal regression](./html/demo_kruskal.html)
 * [Tucker regression and sparse Tucker regression](./html/demo_tucker.html)
 * [Regularized matrix regression](./html/demo_matrixreg.html)
+
 
 ### Legal stuff
 

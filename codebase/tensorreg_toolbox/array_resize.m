@@ -17,10 +17,14 @@ function [B] = array_resize(A, targetdim, varargin)
 %   OUTPUT
 %       B: resized array
 %
+% Examples
+%
+% See also imresize
+%
 % TODO
 %   - wavelet transform
 %
-% COPYRIGHT 2011-2013 North Carolina State University
+% Copyright 2011-2013 North Carolina State University
 % Hua Zhou <hua_zhou@ncsu.edu>
 
 % parse inputs
@@ -90,11 +94,11 @@ switch method
             if isinverse
                 Kd = wpfun(method,p(d)-1,ceil(log2(targetdim(d)/(2*N-1))));
                 Kd = bsxfun(@times, Kd, 1./sqrt(sum(Kd.^2,2)));
-                U{d} = imresize(Kd,[p(d),targetdim(d)])';
+                U{d} = array_resize(Kd,[p(d),targetdim(d)])';
             else
                 Kd = wpfun(method,targetdim(d)-1,ceil(log2(p(d)/(2*N-1))));
                 Kd = bsxfun(@times, Kd, 1./sqrt(sum(Kd.^2,2)));
-                U{d} = imresize(Kd,[targetdim(d),p(d)]);
+                U{d} = array_resize(Kd,[targetdim(d),p(d)]);
             end
         end
         % cast back to the previous class

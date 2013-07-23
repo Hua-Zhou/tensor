@@ -33,7 +33,7 @@ function [beta0_final,beta_final,beta_scale,glmstats] = ...
 %
 %       'PenaltyTolFun' - Tolerence at penalization stage, default is 1e-3
 %
-%       'weights' - observation weights, default is ones for each obs.
+%       'weights' - Observation weights, default is ones for each obs.
 %
 % INPUT:
 %   X - n-by-p0 regular covariate matrix
@@ -62,8 +62,8 @@ function [beta0_final,beta_final,beta_scale,glmstats] = ...
 %   X Li, H Zhou, L Li (2013) Tucker Tensor Regression and Neuroimaging
 %   Analysis, submitted. <http://arxiv.org/abs/1304.5637>
 %
-% COPYRIGHT: North Carolina State University
-% AUTHOR: Hua Zhou (hua_zhou@ncsu.edu), Lexin Li, Xiaoshan Li
+% COPYRIGHT 2011-2013 North Carolina State University
+% Hua Zhou <hua_zhou@ncsu.edu>
 
 % parse inputs
 argin = inputParser;
@@ -354,8 +354,8 @@ end
         %   Version: 03/10/10
         %   Authors: Laurent Sorber (Laurent.Sorber@cs.kuleuven.be)
         
-        [I J] = size(A);
-        [K L] = size(B);
+        [I, J] = size(A);
+        [K, L] = size(B);
         if ~issparse(A) && ~issparse(B)
             A = reshape(A,[1 I 1 J]);
             B = reshape(B,[K 1 L 1]);

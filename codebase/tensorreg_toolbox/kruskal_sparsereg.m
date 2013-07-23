@@ -74,7 +74,7 @@ function [beta0_final,beta_final,beta_scale,glmstats] = ...
 % TODO
 %
 % COPYRIGHT 2011-2013 North Carolina State University
-% Hua Zhou (hua_zhou@ncsu.edu) and Lexin Li
+% Hua Zhou <hua_zhou@ncsu.edu>
 
 % parse inputs
 argin = inputParser;

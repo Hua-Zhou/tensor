@@ -29,7 +29,7 @@ function [Mproj,PC,latent] = tpca(M,d,varargin)
 %
 % See also pca
 %
-% Reference:
+% Reference
 %   L Lu, KN Plataniotis, and AN Venetsanopoulos (2006) Multilinear
 %   principal component analysis for tensor objects for classification, 
 %   Proc. Int. Conf. on Pattern Recognition.
