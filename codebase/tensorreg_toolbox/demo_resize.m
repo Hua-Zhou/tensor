@@ -4,7 +4,7 @@ clear;
 % load an RBG image: 135-by-198-by-3 array
 I = imread('onion.png');
 display(size(I));
-figure; imshow(I);
+figure; imagesc(I);
 
 %%
 % Set target dimension
@@ -15,27 +15,27 @@ display(targetdim);
 % Downsize using interpolation
 I_interp = array_resize(I, targetdim); %<-- default method is interpolate
 display(size(I_interp));
-figure; imshow(I_interp);
+figure; imagesc(I_interp);
 
 %%
 % Downsize using discrete cosine transform (DCT)
 I_dct = array_resize(I, targetdim, 'method', 'dct');
 display(size(I_dct));
-figure; imshow(I_dct);
+figure; imagesc(I_dct);
 
 %%
 % Downsize to PCA scores using HOSVD. PC scores loose original
 % interpretation
 I_hosvd = array_resize(I, targetdim, 'method', 'hosvd');
 display(size(I_hosvd));
-figure; imshow(I_hosvd);
+figure; imagesc(I_hosvd);
 
 %%
 % Downsize to PCA scores using marginal SVD. PC scores loose original
 % interpretation
 I_2dsvd = array_resize(I, targetdim, 'method', '2dsvd');
 display(size(I_2dsvd));
-figure; imshow(I_2dsvd);
+figure; imagesc(I_2dsvd);
 
 %% Upsize an array using different methods
 
@@ -48,13 +48,13 @@ display(targetdim);
 % Upsize using interpolation
 I_interp = array_resize(I, targetdim); %<-- default method is interpolate
 display(size(I_interp));
-figure; imshow(I_interp);
+figure; imagesc(I_interp);
 
 %%
 % Upsize using discrete cosine transform (DCT)
 I_dct = array_resize(I, targetdim, 'method', 'dct');
 display(size(I_dct));
-figure; imshow(I_dct);
+figure; imagesc(I_dct);
 
 %% Downsizing-analysis-upsizing
 
@@ -64,6 +64,11 @@ s = RandStream('mt19937ar','Seed',2);
 RandStream.setGlobalStream(s);
 
 %%
+% True coefficients for regular (non-array) covariates
+p0 = 5;
+b0 = ones(p0,1);
+
+%%
 % 2D true signal: 64-by-64 cross
 shape = imread('cross.gif'); 
 shape = array_resize(shape,[32,32]); % 32-by-32
@@ -71,9 +76,7 @@ b = zeros(2*size(shape));
 b((size(b,1)/4):(size(b,1)/4)+size(shape,1)-1, ...
     (size(b,2)/4):(size(b,2)/4)+size(shape,2)-1) = shape;
 [p1,p2] = size(b);
-% True coefficients for regular (non-array) covariates
-p0 = 5;
-b0 = ones(p0,1);
+display(size(b));
 
 figure; imagesc(-b);
 colormap(gray);
@@ -86,13 +89,13 @@ axis tight;
 n = 500;    % sample size
 X = randn(n,p0);   % n-by-p0 regular design matrix
 M = tensor(randn(p1,p2,n));  % p1-by-p2-by-n matrix variates
+display(size(M));
 
 %%
 % Simulate responses
 mu = X*b0 + double(ttt(tensor(b), M, 1:2));
 sigma = 1;  % noise level
 y = mu + sigma*randn(n,1);
-display(size(M));
 
 %%
 % Rank 2 Kruskal regression with 64-by-64 covariates
