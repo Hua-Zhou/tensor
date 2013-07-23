@@ -5,7 +5,9 @@ title: TensorReg
 
 ## TensorReg Toolbox for Matlab
 
-TensorReg toolbox is a collection of Matlab functions for tensor regressions
+TensorReg toolbox is a collection of Matlab functions for tensor regressions.
+
+The toolbox is developed by [Hua Zhou](http://www.stat.ncsu.edu/people/zhou/). Dr Lexin Li, Dr Hongtu Zhu, Dr Bo Zhang, Xiaoshan Li, Eun Jeong Min and Changhan Wang provide testing and invaluable feedback.
 
 ### Compatibility
 
@@ -15,11 +17,11 @@ The code is tested on Matlab 8.0.0 (R2012b), but should work on other versions o
 
 TensorReg toolbox requires the [tensor toolbox](http://www.sandia.gov/~tgkolda/TensorToolbox/index-2.5.html) developed at the Sandia National Laboratories. Please follow the link to download and install the tensor toolbox (it's free) before using the TensorReg toolbox. 
 
-If you want to run sparse tensor regression, you also need to download and install the [SparseReg toolbox](http://www4.stat.ncsu.edu/~hzhou3/softwares/sparsereg/).
+If you want to run sparse tensor regression, you also need to download and install the [SparseReg toolbox](http://hua-zhou.github.io/softwares/sparsereg/).
 
 ### Download
 
-[TensorReg_toolbox_0.0.1.zip](../TensorReg_toolbox_0.0.1.zip) (693KB)
+[TensorReg_toolbox_0.0.1.zip](./TensorReg_toolbox_0.0.1.zip) (693KB)
 
 ### Installation
 
@@ -37,17 +39,22 @@ If you want to run sparse tensor regression, you also need to download and insta
 * [Regularized matrix regression](./html/demo_matrixreg.html)
 
 
-### Legal stuff
+### Licensing
 
-MGLM Toolbox for Matlab by [Hua Zhou](http://www4.stat.ncsu.edu/~hzhou3/) and ??? is licensed under the [BSD](./html/COPYRIGHT.txt) license. Please use at your own risk.
+TensorReg Toolbox for Matlab is licensed under the [BSD](./html/COPYRIGHT.txt) license. Please use at your own risk. 
 
-### Citation
+### How to cite
 
-If you use this software in your research, please cite the following papers.
+If you use this toolbox in any way, please cite the software itself along with at least one publication or preprint.  
 
-* H Zhou, L Li, and H Zhu (2013) Tensor regression with applications in neuroimaging data analysis, JASA 108(502):540-552. [link](http://www.tandfonline.com/doi/abs/10.1080/01621459.2013.776499#.UeW24mTXjbw)
-* H Zhou and L Li (2013) Regularized matrix regression, Journal of Royal Statistical Society Series B, in press. \[[arXiv](http://arxiv.org/abs/1204.3331)\]
-* X Li, H Zhou, and L Li (2013) Tucker tensor regression and neuroimaging analysis, \[[arXiv](http://arxiv.org/abs/1304.5637)\]
+* Software reference  
+H Zhou. Matlab TensorReg Toolbox Version 0.0.1, Available online, July 2013. 
+* Default article to cite for Kruskal (CP) regression  
+H Zhou, L Li, and H Zhu (2013) Tensor regression with applications in neuroimaging data analysis, [_JASA_](http://www.tandfonline.com/doi/abs/10.1080/01621459.2013.776499#.UeW24mTXjbw), 108(502):540-552.
+* Default article to cite for Tucker regression:  
+X Li, H Zhou, and L Li (2013) Tucker tensor regression and neuroimaging analysis, \[[arXiv:1304.5637](http://arxiv.org/abs/1304.5637)\]
+* Default article to cite for regularized regression:  
+H Zhou and L Li (2013) Regularized matrix regression, _Journal of Royal Statistical Society Series B_, in press. \[[arXiv](http://arxiv.org/abs/1204.3331)\]
 
 ### Contacts
 

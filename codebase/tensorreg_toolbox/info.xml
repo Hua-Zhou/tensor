@@ -1,9 +1,9 @@
 <productinfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:noNamespaceSchemaLocation="optional">
     <?xml-stylesheet type="text/xsl"href="optional"?>
-    <!-- info.xml file for the MGLM toolbox -->
+    <!-- info.xml file for the TensorReg toolbox -->
     <!-- Version 0.0.1 -->
-    <!-- Copyright (2012-2013) (North Carolina State University).-->
+    <!-- Copyright (2011-2013) (North Carolina State University).-->
     
     <!-- Supply the following six elements in the order specified -->
     <!-- (Required) element; matlabrelease content is not currently used -->
@@ -55,7 +55,7 @@
         <listitem>
             <!-- Include call to open your Web site, if any -->
             <label>TensorReg Toolbox Site</label>
-            <callback>web http://www4.stat.ncsu.edu/~hzhou3/softwares/TensorReg  -browser</callback>
+            <callback>web http://hua-zhou.github.io/softwares/tensorreg/  -browser</callback>
             <icon>$docroot/techdoc/matlab_env/examples/webicon.gif</icon>
         </listitem>
         <!-- Add listitems for other features of your toolbox... -->
