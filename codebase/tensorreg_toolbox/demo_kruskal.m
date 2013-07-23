@@ -165,9 +165,11 @@ s = RandStream('mt19937ar','Seed',2);
 RandStream.setGlobalStream(s);
 
 %%
-% true coefficients for regular covariates
+% True coefficients for regular covariates
 p0 = 5;
 b0 = ones(p0,1);
+
+%%
 % 2D true signal: 64-by-64 cross
 shape = imread('cross.gif'); 
 shape = array_resize(shape,[32,32]); % 32-by-32

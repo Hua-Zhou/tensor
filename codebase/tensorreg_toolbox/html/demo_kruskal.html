@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>demo_kruskal</title><meta name="generator" content="MATLAB 7.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-07-22"><meta name="DC.source" content="demo_kruskal.m"><style type="text/css">
+      --><title>demo_kruskal</title><meta name="generator" content="MATLAB 7.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-07-23"><meta name="DC.source" content="demo_kruskal.m"><style type="text/css">
 
 body {
   background-color: white;
@@ -62,12 +62,12 @@ p.footer {
   color: gray;
 }
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Kruskal linear regression, 2D covariates</a></li><li><a href="#10">Sparse Kruskal linear regression, 2D covariates</a></li><li><a href="#15">Kruskal logistic regression, 2D covariates</a></li><li><a href="#23">Sparse Kruskal logistic regression, 2D covariates</a></li><li><a href="#29">Kruskal linear regression, 3D covariates</a></li><li><a href="#37">Sparse Kruskal linear regression, 3D covariates</a></li></ul></div><h2>Kruskal linear regression, 2D covariates<a name="1"></a></h2><pre class="codeinput">clear;
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Kruskal linear regression, 2D covariates</a></li><li><a href="#10">Sparse Kruskal linear regression, 2D covariates</a></li><li><a href="#15">Kruskal logistic regression, 2D covariates</a></li><li><a href="#24">Sparse Kruskal logistic regression, 2D covariates</a></li><li><a href="#30">Kruskal linear regression, 3D covariates</a></li><li><a href="#38">Sparse Kruskal linear regression, 3D covariates</a></li></ul></div><h2>Kruskal linear regression, 2D covariates<a name="1"></a></h2><pre class="codeinput">clear;
 <span class="comment">% reset random seed</span>
 s = RandStream(<span class="string">'mt19937ar'</span>,<span class="string">'Seed'</span>,2);
 RandStream.setGlobalStream(s);
 </pre><p>2D true signal: 64-by-64 cross</p><pre class="codeinput">shape = imread(<span class="string">'cross.gif'</span>);
-shape = imresize(shape,[32,32]); <span class="comment">% 32-by-32</span>
+shape = array_resize(shape,[32,32]); <span class="comment">% 32-by-32</span>
 b = zeros(2*size(shape));
 b((size(b,1)/4):(size(b,1)/4)+size(shape,1)-1, <span class="keyword">...</span>
     (size(b,2)/4):(size(b,2)/4)+size(shape,2)-1) = shape;
@@ -97,19 +97,19 @@ disp(<span class="string">'rank 1'</span>);
 [~,beta_rk1,glmstats1] = kruskal_reg(X,M,y,1,<span class="string">'normal'</span>);
 toc;
 </pre><pre class="codeoutput">rank 1
-Elapsed time is 1.410779 seconds.
+Elapsed time is 1.380510 seconds.
 </pre><p>Estimate using Kruskal linear regression - rank 2</p><pre class="codeinput">tic;
 disp(<span class="string">'rank 2'</span>);
 [~,beta_rk2,glmstats2] = kruskal_reg(X,M,y,2,<span class="string">'normal'</span>);
 toc;
 </pre><pre class="codeoutput">rank 2
-Elapsed time is 6.324322 seconds.
+Elapsed time is 4.979298 seconds.
 </pre><p>Estimate using Kruskal linear regression - rank 3</p><pre class="codeinput">tic;
 disp(<span class="string">'rank 3'</span>);
 [~,beta_rk3,glmstats3] = kruskal_reg(X,M,y,3,<span class="string">'normal'</span>);
 toc;
 </pre><pre class="codeoutput">rank 3
-Elapsed time is 25.705484 seconds.
+Elapsed time is 26.329647 seconds.
 </pre><p>Display true and recovered signals</p><pre class="codeinput">figure; hold <span class="string">on</span>;
 set(gca,<span class="string">'FontSize'</span>,20);
 
@@ -150,21 +150,21 @@ disp([<span class="string">'lambda='</span>, num2str(lambda(1))]);
     lambda(1),pentype,penparam);
 toc;
 </pre><pre class="codeoutput">lambda=1
-Elapsed time is 5.866253 seconds.
+Elapsed time is 5.924954 seconds.
 </pre><p>Estimate using Kruskal sparse linear regression - lambda 2</p><pre class="codeinput">tic;
 disp([<span class="string">'lambda='</span>, num2str(lambda(2))]);
 [~,beta_rk2,~,glmstat_rk2] = kruskal_sparsereg(X,M,y,3,<span class="string">'normal'</span>,<span class="keyword">...</span>
     lambda(2),pentype,penparam);
 toc;
 </pre><pre class="codeoutput">lambda=100
-Elapsed time is 6.183303 seconds.
+Elapsed time is 5.716226 seconds.
 </pre><p>Estimate using Kruskal sparse linear regression - lambda 3</p><pre class="codeinput">tic;
 disp([<span class="string">'lambda='</span>, num2str(lambda(3))]);
 [~,beta_rk3,~,glmstat_rk3] = kruskal_sparsereg(X,M,y,3,<span class="string">'normal'</span>,<span class="keyword">...</span>
     lambda(3),pentype,penparam);
 toc;
 </pre><pre class="codeoutput">lambda=1000
-Elapsed time is 5.930324 seconds.
+Elapsed time is 6.171003 seconds.
 </pre><p>Display true and recovered signals</p><pre class="codeinput">figure; hold <span class="string">on</span>;
 set(gca,<span class="string">'FontSize'</span>,20);
 
@@ -205,11 +205,10 @@ axis <span class="string">tight</span>;
 <span class="comment">% reset random seed</span>
 s = RandStream(<span class="string">'mt19937ar'</span>,<span class="string">'Seed'</span>,2);
 RandStream.setGlobalStream(s);
-</pre><p>true coefficients for regular covariates</p><pre class="codeinput">p0 = 5;
+</pre><p>True coefficients for regular covariates</p><pre class="codeinput">p0 = 5;
 b0 = ones(p0,1);
-<span class="comment">% 2D true signal: 64-by-64 cross</span>
-shape = imread(<span class="string">'cross.gif'</span>);
-shape = imresize(shape,[32,32]); <span class="comment">% 32-by-32</span>
+</pre><p>2D true signal: 64-by-64 cross</p><pre class="codeinput">shape = imread(<span class="string">'cross.gif'</span>);
+shape = array_resize(shape,[32,32]); <span class="comment">% 32-by-32</span>
 b = zeros(2*size(shape));
 b((size(b,1)/4):(size(b,1)/4)+size(shape,1)-1, <span class="keyword">...</span>
     (size(b,2)/4):(size(b,2)/4)+size(shape,2)-1) = shape;
@@ -227,13 +226,7 @@ display(size(M));
 </pre><pre class="codeoutput">
 ans =
 
-  Columns 1 through 2
-
-          64          64
-
-  Column 3
-
-        1000
+          64          64        1000
 
 </pre><p>Simulate binoary responses from the systematic components</p><pre class="codeinput">mu = X*b0 + double(ttt(tensor(b), M, 1:2));
 y = binornd(1, 1./(1+exp(-mu)));
@@ -242,19 +235,19 @@ disp(<span class="string">'rank 1'</span>);
 [beta0_rk1,beta_rk1,glmstats1,dev1] = kruskal_reg(X,M,y,1,<span class="string">'binomial'</span>);
 toc;
 </pre><pre class="codeoutput">rank 1
-Elapsed time is 2.667806 seconds.
+Elapsed time is 2.570518 seconds.
 </pre><p>Estimate using Kruskal logistic regression - rank 2</p><pre class="codeinput">tic;
 disp(<span class="string">'rank 2'</span>);
 [beta0_rk2,beta_rk2,glmstats2,dev2] = kruskal_reg(X,M,y,2,<span class="string">'binomial'</span>);
 toc;
 </pre><pre class="codeoutput">rank 2
-Elapsed time is 33.132469 seconds.
+Elapsed time is 38.490320 seconds.
 </pre><p>Estimate using Kruskal logistic regression - rank 3</p><pre class="codeinput">tic;
 disp(<span class="string">'rank 3'</span>);
 [beta0_rk3,beta_rk3,glmstats3,dev3] = kruskal_reg(X,M,y,3,<span class="string">'binomial'</span>);
 toc;
 </pre><pre class="codeoutput">rank 3
-Elapsed time is 71.734449 seconds.
+Elapsed time is 87.862526 seconds.
 </pre><p>Display true and recovered signals</p><pre class="codeinput">figure; hold <span class="string">on</span>;
 set(gca,<span class="string">'FontSize'</span>,20);
 
@@ -285,7 +278,7 @@ colormap(gray);
 title({[<span class="string">'rank=3, '</span>, <span class="string">' BIC='</span>,num2str(glmstats3{end}.BIC,5)]});
 axis <span class="string">equal</span>;
 axis <span class="string">tight</span>;
-</pre><img vspace="5" hspace="5" src="demo_kruskal_03.png" alt=""> <h2>Sparse Kruskal logistic regression, 2D covariates<a name="23"></a></h2><p>Set lasso penalty and tuning parameter values</p><pre class="codeinput">pentype = <span class="string">'enet'</span>;
+</pre><img vspace="5" hspace="5" src="demo_kruskal_03.png" alt=""> <h2>Sparse Kruskal logistic regression, 2D covariates<a name="24"></a></h2><p>Set lasso penalty and tuning parameter values</p><pre class="codeinput">pentype = <span class="string">'enet'</span>;
 penparam = 1;
 lambda = [1,10,20];
 </pre><p>Estimate using Kruskal sparse logistic regression - lambda 1</p><pre class="codeinput">tic;
@@ -294,21 +287,21 @@ disp([<span class="string">'lambda='</span>, num2str(lambda(1))]);
     lambda(1),pentype,penparam);
 toc;
 </pre><pre class="codeoutput">lambda=1
-Elapsed time is 83.977367 seconds.
+Elapsed time is 141.182743 seconds.
 </pre><p>Estimate using Kruskal sparse logistic regression - lambda 2</p><pre class="codeinput">tic;
 disp([<span class="string">'lambda='</span>, num2str(lambda(2))]);
 [~,beta_rk2,~,glmstat_rk2] = kruskal_sparsereg(X,M,y,3,<span class="string">'binomial'</span>,<span class="keyword">...</span>
     lambda(2),pentype,penparam);
 toc;
 </pre><pre class="codeoutput">lambda=10
-Elapsed time is 35.649849 seconds.
+Elapsed time is 45.873163 seconds.
 </pre><p>Estimate using Kruskal sparse logistic regression - lambda 3</p><pre class="codeinput">tic;
 disp([<span class="string">'lambda='</span>, num2str(lambda(3))]);
 [~,beta_rk3,~,glmstat_rk3] = kruskal_sparsereg(X,M,y,3,<span class="string">'binomial'</span>,<span class="keyword">...</span>
     lambda(3),pentype,penparam);
 toc;
 </pre><pre class="codeoutput">lambda=20
-Elapsed time is 24.604833 seconds.
+Elapsed time is 24.504358 seconds.
 </pre><p>Display true and recovered signals</p><pre class="codeinput">figure; hold <span class="string">on</span>;
 set(gca,<span class="string">'FontSize'</span>,20);
 
@@ -345,7 +338,7 @@ title({[<span class="string">'TR(3),'</span> pentype <span class="string">'('</s
     [<span class="string">'BIC='</span>, num2str(glmstat_rk3{end}.BIC)]});
 axis <span class="string">equal</span>;
 axis <span class="string">tight</span>;
-</pre><img vspace="5" hspace="5" src="demo_kruskal_04.png" alt=""> <h2>Kruskal linear regression, 3D covariates<a name="29"></a></h2><pre class="codeinput">clear;
+</pre><img vspace="5" hspace="5" src="demo_kruskal_04.png" alt=""> <h2>Kruskal linear regression, 3D covariates<a name="30"></a></h2><pre class="codeinput">clear;
 <span class="comment">% reset random seed</span>
 s = RandStream(<span class="string">'mt19937ar'</span>,<span class="string">'Seed'</span>,2);
 RandStream.setGlobalStream(s);
@@ -373,19 +366,19 @@ disp(<span class="string">'rank 1'</span>);
 [~,beta_rk1,glmstats1] = kruskal_reg(X,M,y,1,<span class="string">'normal'</span>);
 toc;
 </pre><pre class="codeoutput">rank 1
-Elapsed time is 3.652774 seconds.
+Elapsed time is 3.646773 seconds.
 </pre><p>Estimate by Kruskal linear regression - rank 2</p><pre class="codeinput">tic;
 disp(<span class="string">'rank 2'</span>);
 [~,beta_rk2,glmstats2] = kruskal_reg(X,M,y,2,<span class="string">'normal'</span>);
 toc;
 </pre><pre class="codeoutput">rank 2
-Elapsed time is 13.166198 seconds.
+Elapsed time is 12.286285 seconds.
 </pre><p>Estimate by Kruskal linear regression - rank 3</p><pre class="codeinput">tic;
 disp(<span class="string">'rank 3'</span>);
 [~,beta_rk3,glmstats3] = kruskal_reg(X,M,y,3,<span class="string">'normal'</span>);
 toc;
 </pre><pre class="codeoutput">rank 3
-Elapsed time is 22.889291 seconds.
+Elapsed time is 23.287757 seconds.
 </pre><p>Display true and recovered signals</p><pre class="codeinput">figure; hold <span class="string">on</span>;
 set(gca,<span class="string">'FontSize'</span>,20);
 
@@ -424,7 +417,7 @@ ylim([1 p2]);
 zlim([1 p3]);
 title({[<span class="string">'rank=3, '</span>, <span class="string">' BIC='</span>, num2str(glmstats3{end}.BIC,5)]});
 axis <span class="string">equal</span>;
-</pre><img vspace="5" hspace="5" src="demo_kruskal_05.png" alt=""> <h2>Sparse Kruskal linear regression, 3D covariates<a name="37"></a></h2><p>Set lasso penalty and tuning parameter values</p><pre class="codeinput">pentype = <span class="string">'enet'</span>;
+</pre><img vspace="5" hspace="5" src="demo_kruskal_05.png" alt=""> <h2>Sparse Kruskal linear regression, 3D covariates<a name="38"></a></h2><p>Set lasso penalty and tuning parameter values</p><pre class="codeinput">pentype = <span class="string">'enet'</span>;
 penparam = 1;
 lambda = [1,100,1000];
 </pre><p>Estimate using Kruskal sparse linear regression - lambda 1</p><pre class="codeinput">tic;
@@ -433,21 +426,21 @@ disp([<span class="string">'lambda='</span>, num2str(lambda(1))]);
     lambda(1),pentype,penparam);
 toc;
 </pre><pre class="codeoutput">lambda=1
-Elapsed time is 5.830769 seconds.
+Elapsed time is 6.004887 seconds.
 </pre><p>Estimate using Kruskal sparse linear regression - lambda 2</p><pre class="codeinput">tic;
 disp([<span class="string">'lambda='</span>, num2str(lambda(2))]);
 [~,beta_rk2,~,glmstat_rk2] = kruskal_sparsereg(X,M,y,3,<span class="string">'normal'</span>,<span class="keyword">...</span>
     lambda(2),pentype,penparam);
 toc;
 </pre><pre class="codeoutput">lambda=100
-Elapsed time is 4.541835 seconds.
+Elapsed time is 5.488385 seconds.
 </pre><p>Estimate using Kruskal sparse linear regression - lambda 3</p><pre class="codeinput">tic;
 disp([<span class="string">'lambda='</span>, num2str(lambda(3))]);
 [~,beta_rk3,~,glmstat_rk3] = kruskal_sparsereg(X,M,y,3,<span class="string">'normal'</span>,<span class="keyword">...</span>
     lambda(3),pentype,penparam);
 toc;
 </pre><pre class="codeoutput">lambda=1000
-Elapsed time is 4.434053 seconds.
+Elapsed time is 5.276406 seconds.
 </pre><p>Display true and recovered signals</p><pre class="codeinput">figure; hold <span class="string">on</span>;
 set(gca,<span class="string">'FontSize'</span>,20);
 
@@ -506,7 +499,7 @@ RandStream.setGlobalStream(s);
 %%
 % 2D true signal: 64-by-64 cross
 shape = imread('cross.gif'); 
-shape = imresize(shape,[32,32]); % 32-by-32
+shape = array_resize(shape,[32,32]); % 32-by-32
 b = zeros(2*size(shape));
 b((size(b,1)/4):(size(b,1)/4)+size(shape,1)-1, ...
     (size(b,2)/4):(size(b,2)/4)+size(shape,2)-1) = shape;
@@ -663,12 +656,14 @@ s = RandStream('mt19937ar','Seed',2);
 RandStream.setGlobalStream(s);
 
 %%
-% true coefficients for regular covariates
+% True coefficients for regular covariates
 p0 = 5;
 b0 = ones(p0,1);
+
+%%
 % 2D true signal: 64-by-64 cross
 shape = imread('cross.gif'); 
-shape = imresize(shape,[32,32]); % 32-by-32
+shape = array_resize(shape,[32,32]); % 32-by-32
 b = zeros(2*size(shape));
 b((size(b,1)/4):(size(b,1)/4)+size(shape,1)-1, ...
     (size(b,2)/4):(size(b,2)/4)+size(shape,2)-1) = shape;
