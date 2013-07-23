@@ -144,11 +144,6 @@ end
 % convert M into a tensor T
 TM = tensor(M);
 
-% turn off warnings
-warning('off','tensorreg:glmfit_priv:IterationLimit');
-warning('off','tensorreg:glmfit_priv:BadScaling');
-warning('off','tensorreg:glmfit_priv:IllConditioned');
-
 % if space allowing, pre-compute mode-d matricization of TM
 if (strcmpi(computer,'PCWIN64') || strcmpi(computer,'PCWIN32'))
     iswindows = true;
@@ -182,6 +177,12 @@ if (~strcmpi(Display,'off'))
     display('==================');
     display('Penalization stage');
     display('==================');
+end
+% turn off warnings from glmfit_priv
+if ~warn
+    warning('off','stats:glmfit:IterationLimit');
+    warning('off','stats:glmfit:BadScaling');
+    warning('off','stats:glmfit:IllConditioned');
 end
 glmstats = cell(1,d+1);
 dev0 = inf;
@@ -255,12 +256,6 @@ end
 beta0_final = beta0;
 beta_final = beta;
 
-% turn off warnings from glmfit_priv
-if ~warn
-    warning('off','stats:glmfit:IterationLimit');
-    warning('off','stats:glmfit:BadScaling');
-    warning('off','stats:glmfit:IllConditioned');
-end
 if (~strcmpi(Display,'off'))
     display(' ');
     display('==================');
