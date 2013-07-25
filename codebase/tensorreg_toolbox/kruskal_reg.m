@@ -59,7 +59,7 @@ argin.addRequired('y', @isnumeric);
 argin.addRequired('r', @isnumeric);
 argin.addRequired('dist', @(x) ischar(x));
 argin.addParamValue('B0', [], @(x) isnumeric(x) || ...
-    isa(x,'tensor') || isa(x,'ktensor'));
+    isa(x,'tensor') || isa(x,'ktensor') || isa(x,'ttensor'));
 argin.addParamValue('Display', 'off', @(x) strcmp(x,'off') || ...
     strcmp(x,'iter'));
 argin.addParamValue('MaxIter', 100, @(x) isnumeric(x) && x>0);

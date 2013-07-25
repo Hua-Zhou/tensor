@@ -497,6 +497,7 @@ lambda = [10,100,2000];
 
 %%
 % Estimate using Kruskal sparse linear regression - lambda 1
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(1))]);
 [~,beta_rk1,~,glmstat_rk1] = kruskal_sparsereg(X,M,y,3,'normal',...
@@ -505,6 +506,7 @@ toc;
 
 %%
 % Estimate using Kruskal sparse linear regression - lambda 2
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(2))]);
 [~,beta_rk2,~,glmstat_rk2] = kruskal_sparsereg(X,M,y,3,'normal',...
@@ -513,6 +515,7 @@ toc;
 
 %%
 % Estimate using Kruskal sparse linear regression - lambda 3
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(3))]);
 [~,beta_rk3,~,glmstat_rk3] = kruskal_sparsereg(X,M,y,3,'normal',...
