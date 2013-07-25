@@ -2,7 +2,7 @@
 
 clear;
 % reset random seed
-s = RandStream('mt19937ar','Seed',2);
+s = RandStream('mt19937ar','Seed',1);
 RandStream.setGlobalStream(s);
 
 %%
@@ -39,6 +39,7 @@ tic;
 disp('rank 1');
 [~,beta_rk1,glmstats1] = kruskal_reg(X,M,y,1,'normal');
 toc;
+display(glmstats1{end});
 
 %%
 % Estimate using Kruskal linear regression - rank 2
@@ -46,13 +47,15 @@ tic;
 disp('rank 2');
 [~,beta_rk2,glmstats2] = kruskal_reg(X,M,y,2,'normal');
 toc;
+display(glmstats2{end});
 
 %%
 % Estimate using Kruskal linear regression - rank 3
 tic;
 disp('rank 3');
-[~,beta_rk3,glmstats3] = kruskal_reg(X,M,y,3,'normal');
+[~,beta_rk3,glmstats3,dev3] = kruskal_reg(X,M,y,3,'normal');
 toc;
+display(glmstats3{end});
 
 %%
 % Display true and recovered signals
@@ -84,6 +87,56 @@ subplot(2,2,4);
 imagesc(-double(beta_rk3));
 colormap(gray);
 title({['rank=3, ', ' BIC=',num2str(glmstats3{end}.BIC,5)]});
+axis equal;
+axis tight;
+
+%% Warm starting from downsized estimate in high rank regression
+
+% Reduce array covariates to smaller size and fit rank-3 model
+tic;
+M_small = array_resize(M, [16 16 size(M,3)]);
+[~,beta_small] = kruskal_reg(X,M_small,y,3,'normal');
+display(size(beta_small));
+
+%%
+% Use reduced-sized estimate as initial point
+[~,beta_ws,glmstats_ws,dev_ws] = kruskal_reg(X,M,y,3,'normal', ...
+    'B0',array_resize(beta_small,[p1 p2]));
+toc;
+display(size(beta_ws));
+
+%%
+% Compare estimate using warming start and previous estimate (5 random
+% initial points); note the smaller deviance and BIC from warm start
+display([dev3 dev_ws]);
+display([glmstats3{end}.BIC glmstats_ws{end}.BIC]);
+
+% Display true and recovered signals
+figure; hold on;
+set(gca,'FontSize',20);
+
+subplot(1,3,1);
+imagesc(-b);
+colormap(gray);
+title('True Signal');
+axis equal;
+axis tight;
+
+subplot(1,3,2);
+imagesc(-double(beta_rk3));
+colormap(gray);
+title({'Estimate from 5 init. pts'; ...
+    ['BIC=',num2str(glmstats3{end}.BIC,5)]; ...
+    ['dev=',num2str(dev3,5)]});
+axis equal;
+axis tight;
+
+subplot(1,3,3);
+imagesc(-double(beta_rk3));
+colormap(gray);
+title({'Estimate from warm start'; ...
+    ['BIC=',num2str(glmstats_ws{end}.BIC,5)]; ...
+    ['dev=',num2str(dev_ws,5)]});
 axis equal;
 axis tight;
 
