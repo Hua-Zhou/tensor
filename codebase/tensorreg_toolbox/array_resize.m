@@ -15,7 +15,7 @@ function [B] = array_resize(A, targetdim, varargin)
 %       'method': 'interpolate'(default) | 'dct' | 'hosvd' | '2dsvd'
 %
 %   OUTPUT
-%       B: resized array
+%       B: resized array, of same type as A
 %
 % Examples
 %
