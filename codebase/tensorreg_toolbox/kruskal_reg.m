@@ -16,6 +16,7 @@ function [beta0_final,beta_final,glmstats_final,dev_final] = ...
 %   KRUSKAL_REG(X,M,Y,R,DIST,'PARAM1',val1,'PARAM2',val2...)allows you to
 %   specify optional parameters to control the model fit. Available
 %   parameter name/value pairs are:
+%       'B0': starting point, it can be a numeric array or a tensor
 %       'Display': 'off' (default) or 'iter'
 %       'MaxIter': maximum iteration, default is 100
 %       'Replicates': # of intitial points to try, default is 5
@@ -138,8 +139,9 @@ if ~isempty(B0)
     if any(size(B0)~=p(1:end-1))
         B0 = array_resize(B0, p);
     end
-    % perform CP decomposition if it's not a ktensor
-    if isa(B0,'tensor') || isa(B0,'ttensor')
+    % perform CP decomposition if it's not a ktensor of correct rank
+    if isa(B0,'tensor') || isa(B0,'ttensor') || ...
+            (isa(B0, 'ktensor') && size(B0.U{1},2)~=r)
         B0 = cp_als(B0, r, 'printitn', 0);
     end
 end
@@ -193,18 +195,18 @@ for rep=1:Replicates
         % cyclic update of the array coefficients
         eta0 = X*beta0;
         for j=1:d
-            if (j==1)
+            if j==1
                 cumkr = ones(1,r);
             end
             if (exist('Md','var'))
-                if (j==d)
+                if j==d
                     Xj = reshape(Md{j}*cumkr,n,p(j)*r);
                 else
                     Xj = reshape(Md{j}*khatrirao([beta.U(d:-1:j+1),cumkr]),...
                         n,p(j)*r);
                 end
             else
-                if (j==d)
+                if j==d
                     Xj = reshape(double(tenmat(TM,[d+1,j]))*cumkr, ...
                         n,p(j)*r);
                 else

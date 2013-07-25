@@ -2,7 +2,7 @@
 
 clear;
 % reset random seed
-s = RandStream('mt19937ar','Seed',1);
+s = RandStream('mt19937ar','Seed',2);
 RandStream.setGlobalStream(s);
 
 %%
@@ -90,7 +90,7 @@ title({['rank=3, ', ' BIC=',num2str(glmstats3{end}.BIC,5)]});
 axis equal;
 axis tight;
 
-%% Warm starting from downsized estimate in high rank regression
+%% Warm starting from coarsened estimate
 
 % Reduce array covariates to smaller size and fit rank-3 model
 tic;
@@ -106,7 +106,7 @@ toc;
 display(size(beta_ws));
 
 %%
-% Compare estimate using warming start and previous estimate (5 random
+% Compare estimate using warm start and previous estimate (5 random
 % initial points); note the smaller deviance and BIC from warm start
 display([dev3 dev_ws]);
 display([glmstats3{end}.BIC glmstats_ws{end}.BIC]);
@@ -149,26 +149,29 @@ lambda = [1,100,1000];
 
 %%
 % Estimate using Kruskal sparse linear regression - lambda 1
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(1))]);
 [~,beta_rk1,~,glmstat_rk1] = kruskal_sparsereg(X,M,y,3,'normal',...
-    lambda(1),pentype,penparam);
+    lambda(1),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
 % Estimate using Kruskal sparse linear regression - lambda 2
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(2))]);
 [~,beta_rk2,~,glmstat_rk2] = kruskal_sparsereg(X,M,y,3,'normal',...
-    lambda(2),pentype,penparam);
+    lambda(2),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
 % Estimate using Kruskal sparse linear regression - lambda 3
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(3))]);
 [~,beta_rk3,~,glmstat_rk3] = kruskal_sparsereg(X,M,y,3,'normal',...
-    lambda(3),pentype,penparam);
+    lambda(3),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
@@ -240,7 +243,7 @@ M = tensor(randn(p1,p2,n));  % p1-by-p2-by-n matrix variates
 display(size(M));
 
 %%
-% Simulate binoary responses from the systematic components
+% Simulate binary responses from the systematic components
 mu = X*b0 + double(ttt(tensor(b), M, 1:2));
 y = binornd(1, 1./(1+exp(-mu)));
 
@@ -255,14 +258,25 @@ toc;
 % Estimate using Kruskal logistic regression - rank 2
 tic;
 disp('rank 2');
-[beta0_rk2,beta_rk2,glmstats2,dev2] = kruskal_reg(X,M,y,2,'binomial');
+% a rough estimate from reduced sized data
+M_reduce = array_resize(M, [16 16 size(M,3)]);
+[~,beta_rk2] = kruskal_reg(X,M_reduce,y,2,'binomial');
+beta_rk2 = array_resize(beta_rk2, [64 64]);
+% warm start from coarsened estimate
+[beta0_rk2,beta_rk2,glmstats2,dev2] = kruskal_reg(X,M,y,2,'binomial', ...
+    'B0', beta_rk2);
 toc;
 
 %%
 % Estimate using Kruskal logistic regression - rank 3
 tic;
 disp('rank 3');
-[beta0_rk3,beta_rk3,glmstats3,dev3] = kruskal_reg(X,M,y,3,'binomial');
+% a rough estimate from reduced sized data
+[~,beta_rk3] = kruskal_reg(X,M_reduce,y,3,'binomial');
+beta_rk3 = array_resize(beta_rk3, [64 64]);
+% warm start from coarsened estimate
+[beta0_rk3,beta_rk3,glmstats3,dev3] = kruskal_reg(X,M,y,3,'binomial', ...
+        'B0', beta_rk3);
 toc;
 
 %%
@@ -304,30 +318,33 @@ axis tight;
 % Set lasso penalty and tuning parameter values
 pentype = 'enet';
 penparam = 1;
-lambda = [1,10,20];
+lambda = [5,10,30];
 
 %%
 % Estimate using Kruskal sparse logistic regression - lambda 1
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(1))]);
 [~,beta_rk1,~,glmstat_rk1] = kruskal_sparsereg(X,M,y,3,'binomial',...
-    lambda(1),pentype,penparam);
+    lambda(1),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
 % Estimate using Kruskal sparse logistic regression - lambda 2
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(2))]);
 [~,beta_rk2,~,glmstat_rk2] = kruskal_sparsereg(X,M,y,3,'binomial',...
-    lambda(2),pentype,penparam);
+    lambda(2),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
 % Estimate using Kruskal sparse logistic regression - lambda 3
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(3))]);
 [~,beta_rk3,~,glmstat_rk3] = kruskal_sparsereg(X,M,y,3,'binomial',...
-    lambda(3),pentype,penparam);
+    lambda(3),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
@@ -410,14 +427,23 @@ toc;
 % Estimate by Kruskal linear regression - rank 2
 tic;
 disp('rank 2');
-[~,beta_rk2,glmstats2] = kruskal_reg(X,M,y,2,'normal');
+% a rough estimate from reduced sized data
+M_reduce = array_resize(M, [10 10 10 size(M,4)]);
+[~,beta_rk2] = kruskal_reg(X,M_reduce,y,2,'normal');
+beta_rk2 = array_resize(beta_rk2, [p1 p2 p3]);
+% warm start from coarsened estimate
+[~,beta_rk2,glmstats2] = kruskal_reg(X,M,y,2,'normal','B0',beta_rk2);
 toc;
 
 %%
 % Estimate by Kruskal linear regression - rank 3
 tic;
 disp('rank 3');
-[~,beta_rk3,glmstats3] = kruskal_reg(X,M,y,3,'normal');
+% a rough estimate from reduced sized data
+[~,beta_rk3] = kruskal_reg(X,M_reduce,y,3,'normal');
+beta_rk3 = array_resize(beta_rk3, [p1 p2 p3]);
+% warm start from coarsened estimate
+[~,beta_rk3,glmstats3] = kruskal_reg(X,M,y,3,'normal','B0',beta_rk3);
 toc;
 
 %%
@@ -467,14 +493,14 @@ axis equal;
 % Set lasso penalty and tuning parameter values
 pentype = 'enet';
 penparam = 1;
-lambda = [1,100,1000];
+lambda = [10,100,2000];
 
 %%
 % Estimate using Kruskal sparse linear regression - lambda 1
 tic;
 disp(['lambda=', num2str(lambda(1))]);
 [~,beta_rk1,~,glmstat_rk1] = kruskal_sparsereg(X,M,y,3,'normal',...
-    lambda(1),pentype,penparam);
+    lambda(1),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
@@ -482,7 +508,7 @@ toc;
 tic;
 disp(['lambda=', num2str(lambda(2))]);
 [~,beta_rk2,~,glmstat_rk2] = kruskal_sparsereg(X,M,y,3,'normal',...
-    lambda(2),pentype,penparam);
+    lambda(2),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
@@ -490,7 +516,7 @@ toc;
 tic;
 disp(['lambda=', num2str(lambda(3))]);
 [~,beta_rk3,~,glmstat_rk3] = kruskal_sparsereg(X,M,y,3,'normal',...
-    lambda(3),pentype,penparam);
+    lambda(3),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
