@@ -138,8 +138,10 @@ if ~isempty(B0)
     if any(size(B0)~=p(1:end-1))
         B0 = array_resize(B0, p);
     end
-    % perform CP decomposition
-    B0 = parafac_als(B0, r);
+    % perform CP decomposition if it's not a ktensor
+    if isa(B0,'tensor') || isa(B0,'ttensor')
+        B0 = cp_als(B0, r, 'printitn', 0);
+    end
 end
 
 % turn off warnings from glmfit_priv
