@@ -8,7 +8,7 @@ function [B] = array_resize(A, targetdim, varargin)
 % has same data type as A.
 %
 %   INPUT
-%       A: a D-dimensional array
+%       A: a D-dimensional array or tensor or ktensor or ttensor
 %       targetdim: a 1-by-D vector of target dimensions
 %
 %   Optional input name-value pairs:
@@ -23,6 +23,7 @@ function [B] = array_resize(A, targetdim, varargin)
 %
 % TODO
 %   - wavelet transform
+%   - methods 'hosvd' and '2dsvd' don't work for tensor input yet
 %
 % Copyright 2011-2013 North Carolina State University
 % Hua Zhou <hua_zhou@ncsu.edu>
@@ -54,7 +55,6 @@ switch method
         
         U = cell(1,D);
         for d=1:D
-            %xi = 1:p(d)/targetdim(d):p(d);
             xi = linspace(1, p(d), targetdim(d));
             j1 = floor(xi);
             j2 = j1 + 1;
@@ -65,12 +65,31 @@ switch method
             U{d} = sparse([1:targetdim(d) 1:targetdim(d)], [j1 j2], ...
                 [w1 w2], targetdim(d), p(d));
         end
-        % cast back to the previous class
-        B = cast(double(ttensor(tensor(A),U)), class(A));
-        
+        if isa(A, 'ktensor') || isa(A, 'ttensor')
+            B = A;
+            for d=1:D
+                B.U{d} = U{d}*B.U{d}; % resize factor matrix
+            end
+        elseif isa(A, 'tensor') % tensor or array
+            B = tensor(ttensor(tensor(A),U));
+        else
+            B = double(ttensor(tensor(A),U));
+            % cast back to the previous class
+            B = cast(B, class(A));
+        end
+
     case 'dct'  % discrete cosine transform
         
-        B = resize(A, targetdim);
+        if isa(A, 'ktensor') || isa(A, 'ttensor')
+            B = A';
+            for d=1:D
+                B.U{d} = resize(B.U{d}, [targetdim(d), size(B.U{d},2)]);
+            end
+        elseif isa(A, 'tensor')
+            B = tensor(resize(double(A), targetdim));
+        else
+            B = resize(A, targetdim);
+        end
         
     case 'hosvd' % tensor PCA via HOSVD
         
