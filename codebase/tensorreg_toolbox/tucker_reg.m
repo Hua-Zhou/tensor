@@ -15,30 +15,26 @@ function [beta0_final,beta_final,glmstats_final,dev_final] = ...
 %   [BETA0,BETA,GLMSTATS,DEV] =
 %   TUCKER_REG(X,M,Y,R,DIST,'PARAM1',val1,'PARAM2',val2...)allows you to
 %   specify optional parameters to control the model fit. Available
-%   parameter name/value pairs are :
+%   parameter name/value pairs are:
+%       'B0': starting point, it can be a numeric array or a tensor
+%       'Display': 'off' (default) or 'iter'
+%       'MaxIter': maximum iteration, default is 100
+%       'TolFun': tolerence in objective value, default is 1e-4
+%       'Replicates': # of intitial points to try, default is 5
+%       'weights': observation weights, default is ones for each obs.
 %
-%       'Display' - 'off' (default) or 'iter'
+%   INPUT:
+%       X: n-by-p0 regular covariate matrix
+%       M: array variates (or tensors) with dim(M) = [p1,p2,...,pd,n]
+%       y: n-by-1 respsonse vector
+%       r: d-by-1 ranks of Tucker tensor regression
+%       dist: 'binomial', 'gamma', 'inverse gaussian','normal', or 'poisson'
 %
-%       'MaxIter' - maximum iteration, default is 100
-%
-%       'TolFun' - tolerence in objective value, default is 1e-4
-%
-%       'Replicates' - # of intitial points to try, default is 5
-%
-%       'weights' - observation weights, default is ones for each obs.
-%
-% INPUT:
-%   X - n-by-p0 regular covariate matrix
-%   M - array variates (or tensors) with dim(M) = [p1,p2,...,pd,n]
-%   y - n-by-1 respsonse vector
-%   r - d-by-1 ranks of Tucker tensor regression
-%   dist - 'binomial', 'gamma', 'inverse gaussian','normal', or 'poisson'
-%
-% Output:
-%   beta0_final - regression coefficients for the regular covariates
-%   beta_final - a tensor of regression coefficientsn for array variates
-%   glmstats_final - GLM regression summary statistics for regular
-%       covariates
+%   Output:
+%       beta0_final: regression coefficients for the regular covariates
+%       beta_final: a tensor of regression coefficientsn for array variates
+%       glmstats_final: GLM regression summary statistics for regular
+%           covariates
 %
 % Examples
 %
@@ -63,7 +59,10 @@ argin.addRequired('M', @(x) isa(x,'tensor') || isnumeric(x));
 argin.addRequired('y', @isnumeric);
 argin.addRequired('r', @isnumeric);
 argin.addRequired('dist', @(x) ischar(x));
-argin.addParamValue('Display', 'off', @(x) strcmp(x,'off')||strcmp(x,'iter'));
+argin.addParamValue('B0', [], @(x) isnumeric(x) || ...
+    isa(x,'tensor') || isa(x,'ktensor') || isa(x,'ttensor'));
+argin.addParamValue('Display', 'off', @(x) strcmp(x,'off') ...
+    || strcmp(x,'iter'));
 argin.addParamValue('MaxIter', 100, @(x) isnumeric(x) && x>0);
 argin.addParamValue('TolFun', 1e-4, @(x) isnumeric(x) && x>0);
 argin.addParamValue('Replicates', 5, @(x) isnumeric(x) && x>0);
@@ -71,6 +70,7 @@ argin.addParamValue('warn', false, @(x) islogical(x));
 argin.addParamValue('weights', [], @(x) isnumeric(x) && all(x>=0));
 argin.parse(X,M,y,r,dist,varargin{:});
 
+B0 = argin.Results.B0;
 Display = argin.Results.Display;
 MaxIter = argin.Results.MaxIter;
 TolFun = argin.Results.TolFun;
@@ -104,17 +104,6 @@ if (n<p0 || n<max(r.*p(1:end-1)))
         'sample size n is not large enough to estimate all parameters!');
 end
 
-% turn off warnings
-if ~warn
-    warning('off','stats:glmfit:IterationLimit');
-    warning('off','stats:glmfit:BadScaling');
-    warning('off','stats:glmfit:IllConditioned');
-end
-
-% pre-allocate variables
-glmstats = cell(1,d+2);
-dev_final = inf;
-
 % convert M into a tensor T (if it's not)
 TM = tensor(M);
 
@@ -135,12 +124,51 @@ if (~iswindows || d*(8*prod(size(TM)))<.75*sys.PhysicalMemory.Available) %#ok<PS
 end
 Mn = double(tenmat(TM,d+1,1:d));    % n-by-prod(p)
 
+% check user-supplied initial point
+if ~isempty(B0)
+    % ignore requested multiple initial points
+    Replicates = 1;
+    % check dimension
+    if ndims(B0)~=d
+        error('tensorreg:tucker:badB0', ...
+            'dimension of B0 does not match that of data!');
+    end
+    % turn B0 into a tensor (if it's not)
+    if isnumeric(B0)
+        B0 = tensor(B0);    
+    end
+    % resize to compatible dimension (if it's not)
+    if any(size(B0)~=p(1:end-1))
+        B0 = array_resize(B0, p);
+    end
+    % perform Tucker decomposition if it's not a ttensor of correct rank
+    if isa(B0,'tensor') || isa(B0,'ktensor') || ...
+            (isa(B0, 'ttensor') && any(size(B0.core)~=r))
+        B0 = tucker_als(B0, r, 'printitn', 0);
+    end
+end
+
+% turn off warnings from glmfit_priv
+if ~warn
+    warning('off','stats:glmfit:IterationLimit');
+    warning('off','stats:glmfit:BadScaling');
+    warning('off','stats:glmfit:IllConditioned');
+end
+
+% pre-allocate variables
+glmstats = cell(1,d+2);
+dev_final = inf;
+
 % loop over replicates
 for rep=1:Replicates
-    
-    % initialize tensor regression coefficients from uniform [-1,1]
-    beta = ttensor(tenrand(r),arrayfun(@(j) 1-2*rand(p(j),r(j)), 1:d, ...
-        'UniformOutput',false));
+
+    if ~isempty(B0)
+        beta = B0;
+    else
+        % initialize tensor regression coefficients from uniform [-1,1]
+        beta = ttensor(tenrand(r),arrayfun(@(j) 1-2*rand(p(j),r(j)), 1:d, ...
+            'UniformOutput',false));
+    end
     
     % main loop
     for iter=1:MaxIter

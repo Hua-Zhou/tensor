@@ -65,7 +65,7 @@ toc;
 % Estimate using Tucker linear regression - rank (3 3)
 tic;
 disp('rank (3 3)');
-[~,beta_rk3,glmstats3] = tucker_reg(X,M,y,[3 3],'normal');
+[~,beta_rk3,glmstats3,dev3] = tucker_reg(X,M,y,[3 3],'normal');
 toc;
 
 %%
@@ -115,28 +115,81 @@ title({['rank=(3,3), ', ' BIC=',num2str(glmstats3{end}.BIC,5)]});
 axis equal;
 axis tight;
 
+%% Warm starting from coarsened estimate
+
+% Reduce array covariates to smaller size and fit rank-3 model
+tic;
+M_small = array_resize(M, [16 16 size(M,3)]);
+[~,beta_small] = tucker_reg(X,M_small,y,3,'normal');
+display(size(beta_small));
+
+%%
+% Use coarsened estimate as initial point
+[~,beta_ws,glmstats_ws,dev_ws] = tucker_reg(X,M,y,3,'normal', ...
+    'B0',array_resize(beta_small,[p1 p2]));
+toc;
+display(size(beta_ws));
+
+%%
+% Compare estimate using warm start and previous estimate (5 random
+% initial points)
+display([dev3 dev_ws]);
+display([glmstats3{end}.BIC glmstats_ws{end}.BIC]);
+
+% Display true and recovered signals
+figure; hold on;
+set(gca,'FontSize',20);
+
+subplot(1,3,1);
+imagesc(-b);
+colormap(gray);
+title('True Signal');
+axis equal;
+axis tight;
+
+subplot(1,3,2);
+imagesc(-double(beta_rk3));
+colormap(gray);
+title({'Estimate from 5 init. pts'; ...
+    ['BIC=',num2str(glmstats3{end}.BIC,5)]; ...
+    ['dev=',num2str(dev3,5)]});
+axis equal;
+axis tight;
+
+subplot(1,3,3);
+imagesc(-double(beta_rk3));
+colormap(gray);
+title({'Estimate from warm start'; ...
+    ['BIC=',num2str(glmstats_ws{end}.BIC,5)]; ...
+    ['dev=',num2str(dev_ws,5)]});
+axis equal;
+axis tight;
+
+
 %% Sparse Tucker linear regression, 2D covariates
 
 %%
 % Set lasso penalty and tuning parameter values
 pentype = 'enet';
 penparam = 1;
-lambda = [1,100,1000];
+lambda = [1,5,1000];
 
 %%
 % Estimate using Tucker sparse linear regression - lambda 1
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(1))]);
 [~,beta_rk1,~,glmstat_rk1] = tucker_sparsereg(X,M,y,3,'normal',...
-    lambda(1),pentype,penparam);
+    lambda(1),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
 % Estimate using Tucker sparse linear regression - lambda 2
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(2))]);
 [~,beta_rk2,~,glmstat_rk2] = tucker_sparsereg(X,M,y,3,'normal',...
-    lambda(2),pentype,penparam);
+    lambda(2),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
@@ -144,7 +197,7 @@ toc;
 tic;
 disp(['lambda=', num2str(lambda(3))]);
 [~,beta_rk3,~,glmstat_rk3] = tucker_sparsereg(X,M,y,3,'normal',...
-    lambda(3),pentype,penparam);
+    lambda(3),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
@@ -216,7 +269,7 @@ M = tensor(randn(p1,p2,n));  % p1-by-p2-by-n matrix variates
 display(size(M));
 
 %%
-% Simulate binoary responses from the systematic components
+% Simulate binary responses from the systematic components
 mu = X*b0 + double(ttt(tensor(b), M, 1:2));
 y = binornd(1, 1./(1+exp(-mu)));
 
@@ -237,22 +290,35 @@ toc;
 %%
 % Estimate using Tucker logistic regression - rank (2 2)
 tic;
+% a rough estimate from reduced sized data
+M_reduce = array_resize(M, [16 16 size(M,3)]);
+[~,beta_rk2] = tucker_reg(X,M_reduce,y,[2 2],'binomial');
+beta_rk2 = array_resize(beta_rk2, [64 64]);
+% warm start from coarsened estimate
 disp('rank (2 2)');
-[~,beta_rk2,glmstats2] = tucker_reg(X,M,y,[2 2],'binomial');
+[~,beta_rk2,glmstats2] = tucker_reg(X,M,y,[2 2],'binomial','B0',beta_rk2);
 toc;
 
 %%
 % Estimate using Tucker logistic regression - rank (2 3)
 tic;
 disp('rank (2 3)');
-[~,beta_rk23,glmstats23] = tucker_reg(X,M,y,[2 3],'binomial');
+% a rough estimate from reduced sized data
+[~,beta_rk23] = tucker_reg(X,M_reduce,y,[2 3],'binomial');
+beta_rk23 = array_resize(beta_rk23, [64 64]);
+% warm start from coarsened estimate
+[~,beta_rk23,glmstats23] = tucker_reg(X,M,y,[2 3],'binomial','B0',beta_rk23);
 toc;
 
 %%
 % Estimate using Tucker logistic regression - rank (3 3)
 tic;
 disp('rank (3 3)');
-[~,beta_rk3,glmstats3] = tucker_reg(X,M,y,[3 3],'binomial');
+% a rough estimate from reduced sized data
+[~,beta_rk3] = tucker_reg(X,M_reduce,y,[3 3],'binomial');
+beta_rk3 = array_resize(beta_rk3, [64 64]);
+% warm start from coarsened estimate
+[~,beta_rk3,glmstats3] = tucker_reg(X,M,y,[3 3],'binomial','B0',beta_rk3);
 toc;
 
 %%
@@ -312,26 +378,29 @@ lambda = [1,10,100];
 
 %%
 % Estimate using Tucker sparse logistic regression - lambda 1
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(1))]);
 [~,beta_rk1,~,glmstat_rk1] = tucker_sparsereg(X,M,y,3,'binomial',...
-    lambda(1),pentype,penparam);
+    lambda(1),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
 % Estimate using Tucker sparse logistic regression - lambda 2
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(2))]);
 [~,beta_rk2,~,glmstat_rk2] = tucker_sparsereg(X,M,y,3,'binomial',...
-    lambda(2),pentype,penparam);
+    lambda(2),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
 % Estimate using Tucker sparse logistic regression - lambda 3
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(3))]);
 [~,beta_rk3,~,glmstat_rk3] = tucker_sparsereg(X,M,y,3,'binomial',...
-    lambda(3),pentype,penparam);
+    lambda(3),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
@@ -422,21 +491,36 @@ toc;
 % Estimate by Tucker linear regression - rank (2 2 2)
 tic;
 disp('rank (2 2 2)');
-[~,beta_rk2,glmstats2] = tucker_reg(X,M,y,[2 2 2],'normal');
+% a rough estimate from reduced sized data
+M_reduce = array_resize(M, [10 10 10 size(M,4)]);
+[~,beta_rk2] = tucker_reg(X,M_reduce,y,2,'normal');
+beta_rk2 = array_resize(beta_rk2, [p1 p2 p3]);
+% warm start from coarsened estimate
+[~,beta_rk2,glmstats2] = tucker_reg(X,M,y,[2 2 2],'normal','B0',beta_rk2);
 toc;
 
 %%
 % Estimate by Tucker linear regression - rank (2 3 3)
 tic;
 disp('rank (2 3 3)');
-[~,beta_rk233,glmstats233] = tucker_reg(X,M,y,[2 3 3],'normal');
+% a rough estimate from reduced sized data
+M_reduce = array_resize(M, [10 10 10 size(M,4)]);
+[~,beta_rk233] = tucker_reg(X,M_reduce,y,[2 3 3],'normal');
+beta_rk233 = array_resize(beta_rk233, [p1 p2 p3]);
+% warm start from coarsened estimate
+[~,beta_rk233,glmstats233] = tucker_reg(X,M,y,[2 3 3],'normal','B0',beta_rk233);
 toc;
 
 %%
 % Estimate by Tucker linear regression - rank (3 3 3)
 tic;
 disp('rank (3 3 3)');
-[~,beta_rk3,glmstats3] = tucker_reg(X,M,y,[3 3 3],'normal');
+% a rough estimate from reduced sized data
+M_reduce = array_resize(M, [10 10 10 size(M,4)]);
+[~,beta_rk3] = tucker_reg(X,M_reduce,y,3,'normal');
+beta_rk3 = array_resize(beta_rk3, [p1 p2 p3]);
+% warm start from coarsened estimate
+[~,beta_rk3,glmstats3] = tucker_reg(X,M,y,[3 3 3],'normal','B0',beta_rk3);
 toc;
 
 %%
@@ -505,30 +589,33 @@ axis equal;
 % Set lasso penalty and tuning parameter values
 pentype = 'enet';
 penparam = 1;
-lambda = [1,100,1000];
+lambda = [1,10,1000];
 
 %%
 % Estimate using Tucker sparse linear regression - lambda 1
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(1))]);
 [~,beta_rk1,~,glmstat_rk1] = tucker_sparsereg(X,M,y,3,'normal',...
-    lambda(1),pentype,penparam);
+    lambda(1),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
 % Estimate using Tucker sparse linear regression - lambda 2
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(2))]);
 [~,beta_rk2,~,glmstat_rk2] = tucker_sparsereg(X,M,y,3,'normal',...
-    lambda(2),pentype,penparam);
+    lambda(2),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
 % Estimate using Tucker sparse linear regression - lambda 3
+% Warm start from rank 3 estimate
 tic;
 disp(['lambda=', num2str(lambda(3))]);
 [~,beta_rk3,~,glmstat_rk3] = tucker_sparsereg(X,M,y,3,'normal',...
-    lambda(3),pentype,penparam);
+    lambda(3),pentype,penparam,'B0',beta_rk3);
 toc;
 
 %%
