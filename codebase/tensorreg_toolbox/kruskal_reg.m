@@ -73,7 +73,7 @@ B0 = argin.Results.B0;
 Display = argin.Results.Display;
 MaxIter = argin.Results.MaxIter;
 TolFun = argin.Results.TolFun;
-Replicates = argin.Results.Replicates;
+Replicates = (argin.Results.Replicates - 1) * isempty(B0) + 1;
 warn = argin.Results.warn;
 wts = argin.Results.weights;
 
